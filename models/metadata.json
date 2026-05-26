@@ -1,0 +1,63 @@
+{
+  "models": [
+    {
+      "version": "v1",
+      "model_name": "CNN-GRU Fusion",
+      "task": "Market Regime Classification",
+      "num_classes": 4,
+      "classes": [
+        "Trending-Up",
+        "Transition-Up",
+        "Transition-Down",
+        "Trending-Down"
+      ],
+      "assets": ["SPY", "QQQ", "TLT"],
+      "data_sources": {
+        "price_sheets": ["SPY", "QQQ", "TLT"],
+        "macro_daily": "Macro_daily",
+        "macro_monthly": "Macro_monthly"
+      },
+      "input_config": {
+        "window_size": 60,
+        "feature_columns": [
+          "log_return",
+          "trend",
+          "residual",
+          "trend_slope_5",
+          "trend_slope_20",
+          "trend_acceleration",
+          "residual_zscore",
+          "rsi",
+          "ma_gap",
+          "volume_ratio"
+        ]
+      },
+      "model_config": {
+        "architecture": "CNN-GRU",
+        "framework": "PyTorch",
+        "checkpoint_path": "models/cnn_gru_v1.pt"
+      },
+      "training_config": {
+        "train_split": "chronological",
+        "shuffle": false,
+        "lookahead_bias_control": true
+      },
+      "metrics": {
+        "SPY": {
+          "accuracy": 0.7541,
+          "macro_f1": 0.6777
+        },
+        "QQQ": {
+          "accuracy": 0.7069,
+          "macro_f1": 0.6095
+        },
+        "TLT": {
+          "accuracy": 0.7780,
+          "macro_f1": 0.7334
+        }
+      },
+      "created_at": "2026-05-27",
+      "notes": "First production-style exported CNN-GRU model for market regime classification."
+    }
+  ]
+}
