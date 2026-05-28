@@ -1,12 +1,12 @@
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 7: MODEL ARCHITECTURES  [CHANGES 4 + 7]
 #   [4] Dual-scale CNN: CNNShort (20d) + CNNMedium (60d)
 #   [7] Regime-conditioned fusion: ADX regime embedded and fed to dense head
 # ══════════════════════════════════════════════════════════════════════════════
-print("\n" + "=" * 70)
-print("  SECTION 7: DUAL-SCALE CNN-GRU + REGIME CONDITIONING  [v2]")
-print("=" * 70)
+
 
 class CNNShortBranch(nn.Module):
     """

@@ -1,16 +1,30 @@
+import numpy as np
+
+import torch
+import torch.nn as nn
 import torch.nn.functional as F
+from torch.utlis.data import DataLoader
+
 from sklearn.metrics import (
     classification_report, confusion_matrix, f1_score,
     accuracy_score, ConfusionMatrixDisplay)
+
+from models import DualCNNGRUFusion
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 8: TRAINING LOOP
 # ══════════════════════════════════════════════════════════════════════════════
-print("\n" + "=" * 70)
-print("  SECTION 8: TRAINING MODELS")
-print("=" * 70)
 
-def train_model(mode, epochs=EPOCHS, patience=PATIENCE, lr=LR):
+
+def train_model(train_ds, val_ds, test_ds, mode, epochs=EPOCHS, patience=PATIENCE, lr=LR, device=DEVICE, batch_size=BATCH_SIZE, n_feat=N_FEAT):
     print(f"\n  Training: {mode.upper()}")
+
+    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False) # BATCH_SIZE
+    val_dl   = DataLoader(val_ds,   batch_size=batch_size, shuffle=False) # BATCH_SIZE
+    test_dl  = DataLoader(test_ds,  batch_size=batch_size, shuffle=False) # BATCH_SIZE
+
+    STATE_NAMES = {0: "Trending-Down", 1: "Trans-Down", 2: "Trans-Up", 3: "Trending-Up"}
+
     model     = DualCNNGRUFusion(n_feat, mode=mode).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(

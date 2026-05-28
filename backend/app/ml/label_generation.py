@@ -16,7 +16,7 @@ import numpy as np
 #   This is strictly causal — all inputs are computed from historical data only.
 # ══════════════════════════════════════════════════════════════════════════════
 
-def label_genetation(feat, adx_aligned, adx_regime):
+def label_genetation(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_p, di_m, idx, train_frac, val_frac):
     fast_above_slow = (trend_fast > trend_slow).reindex(idx).astype(int)
     adx_strong      = (adx_aligned > 20).astype(int)
     di_bull         = (di_p.reindex(idx).ffill() > di_m.reindex(idx).ffill()).astype(int)
@@ -68,18 +68,6 @@ def label_genetation(feat, adx_aligned, adx_regime):
     val_idx   = valid_idx[split_tr:split_val]
     test_idx  = valid_idx[split_val:]
 
-    X_tr  = feat_clean.loc[train_idx].values
-    X_val = feat_clean.loc[val_idx].values
-    X_te  = feat_clean.loc[test_idx].values
-    y_tr  = labels_clean.loc[train_idx].values
-    y_val = labels_clean.loc[val_idx].values
-    y_te  = labels_clean.loc[test_idx].values
-
-    scaler    = StandardScaler()
-    X_tr_s    = scaler.fit_transform(X_tr)   # fit on train only
-    X_val_s   = scaler.transform(X_val)
-    X_te_s    = scaler.transform(X_te)
-
     vc    = labels_clean.value_counts().sort_index()
     naive = float(vc.max() / vc.sum())
 
@@ -90,3 +78,5 @@ def label_genetation(feat, adx_aligned, adx_regime):
     for lbl, cnt in vc.items():
         print(f"    {STATE_NAMES[lbl]:15s} ({lbl}): {cnt:5d}  ({cnt/len(labels_clean)*100:.1f}%)")
     print(f"  Naive baseline      : {naive:.4f}")
+
+    return feat_clean, labels_clean, regime_clean
