@@ -1,11 +1,8 @@
 import pandas as pd
-from dotenv import load_dotenv
-import os
-load_dotenv()
-data_path = os.getenv("DATA_PATH")
-print("\n" + "=" * 70)
-print("  SECTION 1: LOADING DATA")
-print("=" * 70)
+# ══════════════════════════════════════════════════════════════════════════════
+# SECTION 1: DATA LOADING  (unchanged from v1)
+# ══════════════════════════════════════════════════════════════════════════════
+
 ## spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close
 ## combine with load_ohlcv and dropna_ohlcv
 def load_ohlcv(path, sheet, drop_col, close_col="Close", date_col="Date"):
@@ -46,6 +43,3 @@ def load_cpi(path):
     cpi_df["Date"] = pd.to_datetime(cpi_df["Date"], errors="coerce")
     cpi_s  = cpi_df.dropna(subset=["Date"]).set_index("Date").sort_index()["CPI_YoY"]
     return cpi_s
-
-print(f"  QQQ / TLT  loaded")
-print(f"  Macro: VIX, 10yr, 2yr, CPI loaded")

@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 from data_loader import load_ohlcv
-from preprocessing import butterworth_noncausal, dual_ewm_decomposition
+from backend.app.ml.decomposition import butterworth_noncausal, dual_ewm_decomposition
 
 
 load_dotenv()
@@ -11,6 +11,7 @@ print("\n" + "=" * 70)
 print("  SECTION 1: LOADING DATA")
 print("=" * 70)
 spy_close = load_ohlcv(data_path, "SPY", "Close")
+
 
 print("\n" + "=" * 70)
 print("  SECTION 2: DUAL-SCALE CAUSAL SIGNAL DECOMPOSITION  [v2: +cycle]")
@@ -30,7 +31,10 @@ print("\n" + "=" * 70)
 print("  SECTION 3: FEATURE ENGINEERING  [v2: +ADX +S/R +delta +composite]")
 print("=" * 70)
 
-decompose(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close,
-           trend_fast, trend_slow, cycle_comp, noise_comp, 
-           vix_s, yr10_s, yr2_s, cpi_s)
+feat, adx_aligned, adx_regime = decompose(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close,
+                            trend_fast, trend_slow, cycle_comp, noise_comp, 
+                            vix_s, yr10_s, yr2_s, cpi_s)
 
+print("\n" + "=" * 70)
+print("  SECTION 4: TREND-STATE LABELS  [v2: current regime, not fwd return]")
+print("=" * 70)
