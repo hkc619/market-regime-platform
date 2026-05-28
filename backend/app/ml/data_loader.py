@@ -6,17 +6,13 @@ data_path = os.getenv("DATA_PATH")
 print("\n" + "=" * 70)
 print("  SECTION 1: LOADING DATA")
 print("=" * 70)
-
-def load_ohlcv(path, sheet, close_col="Close", date_col="Date"):
+## spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close
+## combine with load_ohlcv and dropna_ohlcv
+def load_ohlcv(path, sheet, drop_col, close_col="Close", date_col="Date"):
     df = pd.read_excel(path, sheet_name=sheet, parse_dates=[date_col])
     df = df.rename(columns={date_col: "Date"})
     df = df.dropna(subset=["Date"]).set_index("Date").sort_index()
-    return df
-
-## spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close
-def dropna_ohlcv(sheet, col):
-    df = load_ohlcv(sheet)
-    return df[col].dropna()
+    return df[drop_col].dropna()
 
 def load_macro_daily(path):
     macro_daily_df = pd.read_excel(
