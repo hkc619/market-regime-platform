@@ -26,3 +26,11 @@ print(f"  trend_slow (EWM-60) σ  : ${trend_slow.std():.2f}")
 print(f"  cycle component σ      : ${cycle_comp.std():.2f}")
 print(f"  noise component σ      : ${noise_comp.std():.2f}")
 
+print("\n" + "=" * 70)
+print("  SECTION 3: FEATURE ENGINEERING  [v2: +ADX +S/R +delta +composite]")
+print("=" * 70)
+
+decompose(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close,
+           trend_fast, trend_slow, cycle_comp, noise_comp, 
+           vix_s, yr10_s, yr2_s, cpi_s)
+
