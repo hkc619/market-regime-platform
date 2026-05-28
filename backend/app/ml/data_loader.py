@@ -7,8 +7,8 @@ print("\n" + "=" * 70)
 print("  SECTION 1: LOADING DATA")
 print("=" * 70)
 
-def load_ohlcv(sheet, close_col="Close", date_col="Date"):
-    df = pd.read_excel(data_path, sheet_name=sheet, parse_dates=[date_col])
+def load_ohlcv(path, sheet, close_col="Close", date_col="Date"):
+    df = pd.read_excel(path, sheet_name=sheet, parse_dates=[date_col])
     df = df.rename(columns={date_col: "Date"})
     df = df.dropna(subset=["Date"]).set_index("Date").sort_index()
     return df
@@ -18,26 +18,34 @@ def dropna_ohlcv(sheet, col):
     df = load_ohlcv(sheet)
     return df[col].dropna()
 
-def load_macro_daily():
-    macro_daily_df = pd.read_excel(data_path, sheet_name="Macro_Daily", header=0)
-    vix_df  = macro_daily_df.iloc[:, [0, 1]].copy()
-    yr10_df = macro_daily_df.iloc[:, [3, 4]].copy()
-    yr2_df  = macro_daily_df.iloc[:, [6, 7]].copy()
-    def clean_macro_pair(df):
+def load_macro_daily(path):
+    macro_daily_df = pd.read_excel(
+        path, 
+        sheet_name="Macro_Daily", 
+        header=0
+    )
+
+    def clean_macro_pair(date_col, value_col, name):
+        df = macro_daily_df.iloc[:, [date_col, value_col]].copy()
         df.columns = ["Date", "Value"]
+
         df["Date"]  = pd.to_datetime(df["Date"], errors="coerce")
-        df = df.dropna(subset=["Date"]).set_index("Date").sort_index()
-        return df["Value"].dropna()
+        df = (
+            df
+              .dropna(subset=["Date", "Value"])
+              .set_index("Date")
+              .sort_index()
+        )
+        return df["Value"].rename(name)
     
-    vix_s  = clean_macro_pair(vix_df).rename("VIX")
-    yr10_s = clean_macro_pair(yr10_df).rename("Yield10yr")
-    yr2_s  = clean_macro_pair(yr2_df).rename("Yield2yr")
+    vix_s  = clean_macro_pair(0, 1, "VIX")
+    yr10_s = clean_macro_pair(3, 4, "Yield10yr")
+    yr2_s  = clean_macro_pair(6, 7, "Yield2yr")
     
     return vix_s, yr10_s, yr2_s
 
-def load_cpi():
-
-    cpi_df = pd.read_excel(data_path, sheet_name="Macro_Monthly")
+def load_cpi(path):
+    cpi_df = pd.read_excel(path, sheet_name="Macro_Monthly")
     cpi_df.columns = ["Date", "CPI_YoY"]
     cpi_df["Date"] = pd.to_datetime(cpi_df["Date"], errors="coerce")
     cpi_s  = cpi_df.dropna(subset=["Date"]).set_index("Date").sort_index()["CPI_YoY"]
