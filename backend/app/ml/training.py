@@ -5,18 +5,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utlis.data import DataLoader
 
-from sklearn.metrics import (
-    classification_report, confusion_matrix, f1_score,
-    accuracy_score, ConfusionMatrixDisplay)
+from sklearn.metrics import (classification_report, f1_score, accuracy_score)
 
-from models import DualCNNGRUFusion
+from model import DualCNNGRUFusion
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 8: TRAINING LOOP
 # ══════════════════════════════════════════════════════════════════════════════
 
 
-def train_model(train_ds, val_ds, test_ds, mode, epochs=EPOCHS, patience=PATIENCE, lr=LR, device=DEVICE, batch_size=BATCH_SIZE, n_feat=N_FEAT):
+def train_model(train_ds, val_ds, test_ds, mode, epochs, patience, lr, device, batch_size, n_feat):
     print(f"\n  Training: {mode.upper()}")
 
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False) # BATCH_SIZE
@@ -104,10 +102,3 @@ def train_model(train_ds, val_ds, test_ds, mode, epochs=EPOCHS, patience=PATIENC
                                 zero_division=0))
     return model, acc, f1, np.array(all_preds), np.array(all_true), history
 
-results_nn = {}
-for mode in ["cnn_only", "gru_only", "dual_cnn", "fusion"]:
-    model, acc, f1, preds, trues, history = train_model(mode)
-    results_nn[mode] = {
-        "model": model, "acc": acc, "f1": f1,
-        "preds": preds, "trues": trues, "history": history
-    }

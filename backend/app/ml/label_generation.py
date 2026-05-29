@@ -16,10 +16,9 @@ import numpy as np
 #   This is strictly causal — all inputs are computed from historical data only.
 # ══════════════════════════════════════════════════════════════════════════════
 
-def label_genetation(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_p, di_m, idx, train_frac, val_frac):
+def label_generate(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bull, idx, train_frac, val_frac):
     fast_above_slow = (trend_fast > trend_slow).reindex(idx).astype(int)
     adx_strong      = (adx_aligned > 20).astype(int)
-    di_bull         = (di_p.reindex(idx).ffill() > di_m.reindex(idx).ffill()).astype(int)
 
     # Combine into 4-class trend state
     def build_trend_state(fast_above, adx_str, di_b):
@@ -79,4 +78,4 @@ def label_genetation(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_p
         print(f"    {STATE_NAMES[lbl]:15s} ({lbl}): {cnt:5d}  ({cnt/len(labels_clean)*100:.1f}%)")
     print(f"  Naive baseline      : {naive:.4f}")
 
-    return feat_clean, labels_clean, regime_clean
+    return feat_clean, labels_clean, regime_clean, split_tr, split_val

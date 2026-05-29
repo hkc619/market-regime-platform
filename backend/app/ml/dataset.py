@@ -10,7 +10,7 @@ import numpy as np
 #     X_medium : (batch, SEQ_LEN_M=60, n_features)  — trend structure
 #   Plus a scalar regime code per sample.
 # ══════════════════════════════════════════════════════════════════════════════
-def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val):
+def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val, seq_len_s, seq_len_m):
     scaler = StandardScaler()
     feat_scaled_all   = scaler.transform(feat_clean.values)
     label_arr         = labels_clean.values
@@ -45,8 +45,8 @@ def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val):
     y_seq_tr, y_seq_val, y_seq_te  = y_seq[:seq_split_tr], y_seq[seq_split_tr:seq_split_val], y_seq[seq_split_val:]
     r_seq_tr, r_seq_val, r_seq_te  = r_seq[:seq_split_tr], r_seq[seq_split_tr:seq_split_val], r_seq[seq_split_val:]
 
-    print(f"  Short sequences  : {Xs_s.shape}  (samples × {SEQ_LEN_S} × features)") # SEQ_LEN_S
-    print(f"  Medium sequences : {Xs_m.shape}  (samples × {SEQ_LEN_M} × features)") # SEQ_LEN_M
+    print(f"  Short sequences  : {Xs_s.shape}  (samples × {seq_len_s} × features)") # SEQ_LEN_S
+    print(f"  Medium sequences : {Xs_m.shape}  (samples × {seq_len_s} × features)") # SEQ_LEN_M
     print(f"  Train / Val / Test : {len(y_seq_tr)} / {len(y_seq_val)} / {len(y_seq_te)}")
 
     class DualSeqDataset(Dataset):
@@ -68,3 +68,5 @@ def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val):
         1.0 / (class_counts + 1e-6), dtype=torch.float32
     ).to(device)
     class_weights = class_weights / class_weights.sum() * 4
+
+    return train_ds, val_ds, test_ds, Xs_s.shape[2]

@@ -86,6 +86,7 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
 
     # ── [2b] ADX — trend strength ─────────────────────────────────────────────────
     adx, di_p, di_m = compute_adx(spy_high, spy_low, p)
+    di_bull = (di_p.reindex(idx).ffill() > di_m.reindex(idx).ffill()).astype(int)
     feat["adx_14"]              = adx
     feat["adx_zscore_60"]       = (adx - adx.rolling(60).mean()) / (adx.rolling(60).std() + 1e-9)
     feat["di_diff"]             = di_p - di_m          # + = bullish directional pressure
@@ -203,4 +204,4 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
     adx_regime  = pd.cut(adx_aligned, bins=[-np.inf, 20, 35, np.inf],
                         labels=[0, 1, 2]).astype(float)
     
-    return feat, adx_aligned, adx_regime
+    return feat, adx_aligned, adx_regime, di_bull
