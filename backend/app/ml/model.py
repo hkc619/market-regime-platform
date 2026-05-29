@@ -130,9 +130,3 @@ class DualCNNGRUFusion(nn.Module):
         z = F.relu(self.bn2(self.fc2(z)));  z = self.dropout(z)
         z = F.relu(self.bn3(self.fc3(z)));  z = self.dropout(z)
         return self.out(z)
-
-n_feat = Xs_s.shape[2]
-for mode in ["cnn_only", "gru_only", "dual_cnn", "fusion"]:
-    m       = DualCNNGRUFusion(n_feat, mode=mode)
-    n_params = sum(p.numel() for p in m.parameters() if p.requires_grad)
-    print(f"  {mode:12s}: {n_params:,} trainable parameters")

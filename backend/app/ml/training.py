@@ -1,11 +1,12 @@
 import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utlis.data import DataLoader
-
+from torch.utils.data import DataLoader
 from sklearn.metrics import (classification_report, f1_score, accuracy_score)
+
+import sys
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app/ml/')
 
 from model import DualCNNGRUFusion
 

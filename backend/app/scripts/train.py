@@ -1,13 +1,14 @@
 import os
-from app.core.config import DataConfig, TrainingConfig
+import sys
+sys.path.append('../../app')
+from core.config import DataConfig, TrainingConfig
 
-from backend.app.ml.data_loader import load_ohlcv, load_macro_daily, load_cpi
-from backend.app.ml.decomposition import butterworth_noncausal, dual_ewm_decomposition
-from backend.app.ml.features import features
-from backend.app.ml.label_generation import label_generate
-from backend.app.ml.dataset import build_dataset
-from backend.app.ml.model import DualCNNGRUFusion
-from backend.app.ml.training import train_model
+from ml.data_loader import load_ohlcv, load_macro_daily, load_cpi
+from ml.decomposition import dual_ewm_decomposition
+from ml.features import features
+from ml.label_generation import label_generate
+from ml.dataset import build_dataset
+from ml.training import train_model
 
 def train():
 
@@ -19,7 +20,7 @@ def train():
     print("=" * 70)
 
     spy_close = load_ohlcv(data_path, "SPY", "Close")
-    spy_vol =  load_ohlcv(data_path, "SPY", "Volumn")
+    spy_vol =  load_ohlcv(data_path, "SPY", "Volume")
     spy_high = load_ohlcv(data_path, "SPY", "High")
     spy_low = load_ohlcv(data_path, "SPY", "Low")
     qqq_close = load_ohlcv(data_path, "SPY", "Close")
@@ -52,7 +53,7 @@ def train():
     print("\n" + "=" * 70)
     print("  SECTION 4: TREND-STATE LABELS  [v2: current regime, not fwd return]")
     print("=" * 70)
-    idx = spy_close.index()
+    idx = spy_close.index
 
     feat_clean, labels_clean, regime_clean, split_tr, split_val = label_generate(feat, 
                 adx_aligned, adx_regime, trend_fast, trend_slow, 
@@ -85,5 +86,6 @@ def train():
         }
 
 
-if __name__ == 'main':
+if __name__ == "__main__":
     train()
+    print("finish")
