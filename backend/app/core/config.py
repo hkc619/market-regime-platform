@@ -4,6 +4,7 @@ import torch
 @dataclass
 class DataConfig:
     data_path: str = "/Users/hkc619/Documents/PY/project/market-regime-platform/data/dataset.xlsx"
+    output_path: str = "/Users/hkc619/Documents/PY/project/market-regime-platform/models/"
 
 @dataclass
 class TrainingConfig:
@@ -16,3 +17,4 @@ class TrainingConfig:
     EPOCHS: int     = 60
     LR: float       = 1e-3
     PATIENCE: int   = 10
+    SEED: int = 42

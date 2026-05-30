@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 7: MODEL ARCHITECTURES  [CHANGES 4 + 7]
 #   [4] Dual-scale CNN: CNNShort (20d) + CNNMedium (60d)

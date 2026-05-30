@@ -1,8 +1,13 @@
 from scipy.signal import argrelextrema
 import pandas as pd
 import numpy as np
+import sys
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
+from core.config import TrainingConfig
 
 def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_fast, trend_slow, cycle_comp, noise_comp, vix_s, yr10_s, yr2_s, cpi_s):
+    config = TrainingConfig()
+    np.random.seed(config.SEED)
     idx = spy_close.index
 
     def align(s, idx):

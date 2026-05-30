@@ -9,6 +9,6 @@ __pycache__/
 # Environment variables
 .env
 
-
+models/
 deprecated/
 codebase_walkthrough.md

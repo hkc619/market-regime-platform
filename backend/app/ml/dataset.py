@@ -1,8 +1,10 @@
 import torch
 from torch.utils.data import Dataset
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 import numpy as np
+import sys
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
+from core.config import TrainingConfig
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 6: SEQUENCE DATASET — DUAL-SCALE  [CHANGE 4]
 #   Each sample contains TWO sequence windows:
@@ -11,6 +13,10 @@ import numpy as np
 #   Plus a scalar regime code per sample.
 # ══════════════════════════════════════════════════════════════════════════════
 def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val, seq_len_s, seq_len_m, scaler):
+    config = TrainingConfig()
+    np.random.seed(config.SEED)
+    torch.manual_seed(config.SEED)
+    
     feat_scaled_all   = scaler.transform(feat_clean.values)
     label_arr         = labels_clean.values
     regime_arr        = regime_clean.values.astype(np.int64)
@@ -65,7 +71,7 @@ def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val, s
     class_counts  = np.bincount(y_seq_tr, minlength=4)
     class_weights = torch.tensor(
         1.0 / (class_counts + 1e-6), dtype=torch.float32
-    ).to(device)
+    ).to(config.DEVICE)
     class_weights = class_weights / class_weights.sum() * 4
 
     return train_ds, val_ds, test_ds, Xs_s.shape[2], class_weights

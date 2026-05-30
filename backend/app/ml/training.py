@@ -1,14 +1,15 @@
 import numpy as np
 import torch
+import sys
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from sklearn.metrics import (classification_report, f1_score, accuracy_score)
 
-import sys
-sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app/ml/')
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
 
-from model import DualCNNGRUFusion
+from ml.model import DualCNNGRUFusion
+from core.config import TrainingConfig, DataConfig
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 8: TRAINING LOOP
@@ -17,6 +18,10 @@ from model import DualCNNGRUFusion
 
 def train_model(train_ds, val_ds, test_ds, mode, epochs, patience, lr, device, batch_size, n_feat, class_weights):
     print(f"\n  Training: {mode.upper()}")
+
+    config = TrainingConfig()
+    np.random.seed(config.SEED)
+    torch.manual_seed(config.SEED)
 
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False) # BATCH_SIZE
     val_dl   = DataLoader(val_ds,   batch_size=batch_size, shuffle=False) # BATCH_SIZE
@@ -93,6 +98,11 @@ def train_model(train_ds, val_ds, test_ds, mode, epochs, patience, lr, device, b
             rb = rb.to(device)
             all_preds.extend(model(xs, xm, rb).argmax(1).cpu().numpy())
             all_true.extend(yb.numpy())
+    
+    config = DataConfig()
+    PATH = config.output_path + f"{mode}_v1.pth"
+    torch.save(model.state_dict(), PATH)
+    print(f"\n  ── Model Saved:{mode}_v1.pth ──")
 
     acc = accuracy_score(all_true, all_preds)
     f1  = f1_score(all_true, all_preds, average="macro", zero_division=0)

@@ -1,6 +1,9 @@
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
+import sys
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
+from core.config import TrainingConfig
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 4: TREND-STATE LABELS  [CHANGE 1]
@@ -19,6 +22,9 @@ import numpy as np
 def label_generate(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bull, idx, train_frac, val_frac):
     fast_above_slow = (trend_fast > trend_slow).reindex(idx).astype(int)
     adx_strong      = (adx_aligned > 20).astype(int)
+    
+    config = TrainingConfig()
+    np.random.seed(config.SEED)
 
     # Combine into 4-class trend state
     def build_trend_state(fast_above, adx_str, di_b):
