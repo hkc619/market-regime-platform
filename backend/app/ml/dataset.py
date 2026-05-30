@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-from sklearn.preprocessing import StandardScaler
+
 import numpy as np
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 6: SEQUENCE DATASET — DUAL-SCALE  [CHANGE 4]
@@ -10,8 +10,7 @@ import numpy as np
 #     X_medium : (batch, SEQ_LEN_M=60, n_features)  — trend structure
 #   Plus a scalar regime code per sample.
 # ══════════════════════════════════════════════════════════════════════════════
-def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val, seq_len_s, seq_len_m):
-    scaler = StandardScaler()
+def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val, seq_len_s, seq_len_m, scaler):
     feat_scaled_all   = scaler.transform(feat_clean.values)
     label_arr         = labels_clean.values
     regime_arr        = regime_clean.values.astype(np.int64)
@@ -69,4 +68,4 @@ def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val, s
     ).to(device)
     class_weights = class_weights / class_weights.sum() * 4
 
-    return train_ds, val_ds, test_ds, Xs_s.shape[2]
+    return train_ds, val_ds, test_ds, Xs_s.shape[2], class_weights

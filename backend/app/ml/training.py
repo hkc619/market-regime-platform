@@ -15,7 +15,7 @@ from model import DualCNNGRUFusion
 # ══════════════════════════════════════════════════════════════════════════════
 
 
-def train_model(train_ds, val_ds, test_ds, mode, epochs, patience, lr, device, batch_size, n_feat):
+def train_model(train_ds, val_ds, test_ds, mode, epochs, patience, lr, device, batch_size, n_feat, class_weights):
     print(f"\n  Training: {mode.upper()}")
 
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=False) # BATCH_SIZE

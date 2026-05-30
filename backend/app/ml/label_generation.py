@@ -78,4 +78,8 @@ def label_generate(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bul
         print(f"    {STATE_NAMES[lbl]:15s} ({lbl}): {cnt:5d}  ({cnt/len(labels_clean)*100:.1f}%)")
     print(f"  Naive baseline      : {naive:.4f}")
 
-    return feat_clean, labels_clean, regime_clean, split_tr, split_val
+    X_tr  = feat_clean.loc[train_idx].values
+    scaler    = StandardScaler()
+    X_tr_s    = scaler.fit_transform(X_tr)
+
+    return feat_clean, labels_clean, regime_clean, split_tr, split_val, scaler

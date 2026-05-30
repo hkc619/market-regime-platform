@@ -3,6 +3,7 @@ import sys
 sys.path.append('../../app')
 from core.config import DataConfig, TrainingConfig
 
+
 from ml.data_loader import load_ohlcv, load_macro_daily, load_cpi
 from ml.decomposition import dual_ewm_decomposition
 from ml.features import features
@@ -55,16 +56,19 @@ def train():
     print("=" * 70)
     idx = spy_close.index
 
-    feat_clean, labels_clean, regime_clean, split_tr, split_val = label_generate(feat, 
-                adx_aligned, adx_regime, trend_fast, trend_slow, 
-                di_bull, idx, train_frac = config.TRAIN_FRAC, val_frac = config.VAL_FRAC)
+    feat_clean, labels_clean, regime_clean, split_tr, split_val, scaler = label_generate(
+        feat, adx_aligned, adx_regime, trend_fast, trend_slow, 
+        di_bull, idx, train_frac = config.TRAIN_FRAC, val_frac = config.VAL_FRAC
+        )
 
     print("\n" + "=" * 70)
     print("  SECTION 6: DUAL-SCALE SEQUENCE DATASET  [v2: 20-day + 60-day]")
     print("=" * 70)
 
-    train_ds, val_ds, test_ds, n_feat = build_dataset(feat_clean, labels_clean, regime_clean, 
-                                                      split_tr, split_val, seq_len_s=config.SEQ_LEN_S, seq_len_m=config.SEQ_LEN_M)
+    train_ds, val_ds, test_ds, n_feat, class_weights = build_dataset(
+        feat_clean, labels_clean, regime_clean, 
+        split_tr, split_val, seq_len_s=config.SEQ_LEN_S, seq_len_m=config.SEQ_LEN_M, scaler=scaler
+        )
 
     print("\n" + "=" * 70)
     print("  SECTION 7: DUAL-SCALE CNN-GRU + REGIME CONDITIONING  [v2]")
@@ -78,7 +82,7 @@ def train():
     for mode in ["cnn_only", "gru_only", "dual_cnn", "fusion"]:
         model, acc, f1, preds, trues, history = train_model(train_ds, val_ds, test_ds, 
                 mode=mode, epochs=config.EPOCHS, patience=config.PATIENCE, 
-                lr=config.LR, device=config.DEVICE, batch_size=config.BATCH_SIZE, n_feat=n_feat)
+                lr=config.LR, device=config.DEVICE, batch_size=config.BATCH_SIZE, n_feat=n_feat, class_weights=class_weights)
         results_nn[mode] = {
             "model": model, "acc": acc, "f1": f1,
             "preds": preds, "trues": trues, "history": history
