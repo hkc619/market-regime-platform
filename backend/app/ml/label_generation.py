@@ -1,9 +1,10 @@
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
+import pickle
 import sys
 sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
-from core.config import TrainingConfig
+from core.config import TrainingConfig, DataConfig
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 4: TREND-STATE LABELS  [CHANGE 1]
@@ -87,5 +88,11 @@ def label_generate(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bul
     X_tr  = feat_clean.loc[train_idx].values
     scaler    = StandardScaler()
     X_tr_s    = scaler.fit_transform(X_tr)
+
+    config = DataConfig()
+    with open(config.output_path + 'scaler.pkl', 'wb') as f:
+        pickle.dump(scaler, f)
+
+    print(f"\n  ── Model Saved: scaler.pkl ──")
 
     return feat_clean, labels_clean, regime_clean, split_tr, split_val, scaler

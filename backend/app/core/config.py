@@ -18,3 +18,8 @@ class TrainingConfig:
     LR: float       = 1e-3
     PATIENCE: int   = 10
     SEED: int = 42
+
+@dataclass
+class ModelConfig:
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_path: str = "/Users/hkc619/Documents/PY/project/market-regime-platform/models/"

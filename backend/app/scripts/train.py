@@ -24,8 +24,8 @@ def train():
     spy_vol =  load_ohlcv(data_path, "SPY", "Volume")
     spy_high = load_ohlcv(data_path, "SPY", "High")
     spy_low = load_ohlcv(data_path, "SPY", "Low")
-    qqq_close = load_ohlcv(data_path, "SPY", "Close")
-    tlt_close = load_ohlcv(data_path, "SPY", "Close")
+    qqq_close = load_ohlcv(data_path, "QQQ", "Close")
+    tlt_close = load_ohlcv(data_path, "TLT", "Close")
 
     vix_s, yr10_s, yr2_s = load_macro_daily(data_path)
     cpi_s = load_cpi(data_path)
