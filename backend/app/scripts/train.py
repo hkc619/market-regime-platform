@@ -3,7 +3,6 @@ import sys
 sys.path.append('../../app')
 from core.config import DataConfig, TrainingConfig
 
-
 from ml.data_loader import load_ohlcv, load_macro_daily, load_cpi
 from ml.decomposition import dual_ewm_decomposition
 from ml.features import features

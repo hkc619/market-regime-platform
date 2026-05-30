@@ -23,3 +23,4 @@ class TrainingConfig:
 class ModelConfig:
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_path: str = "/Users/hkc619/Documents/PY/project/market-regime-platform/models/"
+    data_path: str = "/Users/hkc619/Documents/PY/project/market-regime-platform/data/test_dataset.xlsx"

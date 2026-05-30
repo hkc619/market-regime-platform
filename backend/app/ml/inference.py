@@ -9,16 +9,18 @@ sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backe
 from ml.decomposition import dual_ewm_decomposition
 from ml.features import features
 from ml.model import DualCNNGRUFusion
+from ml.data_loader import load_ohlcv, load_macro_daily, load_cpi
 
 from core.config import ModelConfig
 
-def load_data(df):
-    spy_close = df["SPY-Close"]
-    spy_vol =  df["SPY-Volume"]
-    spy_high = df["SPY-High"]
-    spy_low = df["SPY-Low"]
-    qqq_close = df["QQQ-Close"]
-    tlt_close = df["TLT-Close"]
+def load_data(data_path):
+    print("loading data...")
+    spy_close = load_ohlcv(data_path, "SPY", "Close")
+    spy_vol =  load_ohlcv(data_path, "SPY", "Volume")
+    spy_high = load_ohlcv(data_path, "SPY", "High")
+    spy_low = load_ohlcv(data_path, "SPY", "Low")
+    qqq_close = load_ohlcv(data_path, "QQQ", "Close")
+    tlt_close = load_ohlcv(data_path, "TLT", "Close")
 
     vix_s, yr10_s, yr2_s = load_macro_daily(data_path)
     cpi_s = load_cpi(data_path)
@@ -27,6 +29,9 @@ def load_data(df):
 
     feat, adx_aligned, adx_regime, di_bull = features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close,
                                 trend_fast, trend_slow, cycle_comp, noise_comp, vix_s, yr10_s, yr2_s, cpi_s)
+    print(feat.shape)
+    print("\n")
+    print(adx_regime.shape)
     valid_idx = feat.dropna().index
     feat_clean = feat.loc[valid_idx]
     regime_clean = adx_regime.loc[valid_idx].values.astype(np.int64)
@@ -39,6 +44,7 @@ def load_data(df):
 
 
 def predict_proba(latest_60_feat, latest_regime):
+    print("predicting...")
 
     config = ModelConfig()
     device = config.DEVICE
