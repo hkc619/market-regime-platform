@@ -34,7 +34,7 @@ def load_data(data_path):
 
     feat_clean, regime_clean = generate_predict_label(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bull, idx)
     print("regime_clean.shape: ", regime_clean.shape)
-    latest_regime = regime_clean[-1]
+    latest_regime = regime_clean.values[-1].astype(np.int64)
     
     if len(feat_clean) < 60:
         return {"error": "Valid data length after feature engineering is less than 60 days."}
@@ -49,18 +49,19 @@ def predict_proba(latest_60_feat, latest_regime):
     config = ModelConfig()
     device = config.DEVICE
 
-    with open("scaler.pkl", "rb") as f:
+    with open(f"{config.model_path}scaler.pkl", "rb") as f:
         scaler = pickle.load(f)
 
-    latest_20_scaled = latest_60_scaled[-20:]
+    
     latest_60_scaled = scaler.transform(latest_60_feat)
+    latest_20_scaled = latest_60_scaled[-20:]
 
     Xm_tensor = torch.tensor(latest_60_scaled, dtype=torch.float32).unsqueeze(0).to(device)
     Xs_tensor = torch.tensor(latest_20_scaled, dtype=torch.float32).unsqueeze(0).to(device)
     r_tensor = torch.tensor([latest_regime], dtype=torch.long).to(device)
 
     model = DualCNNGRUFusion(Xs_tensor.shape[2], mode="dual_cnn").to(device)
-    model.load_state_dict(torch.load("dual_cnn_v2.pth", map_location=device))
+    model.load_state_dict(torch.load(f"{config.model_path}dual_cnn_v2.pth", map_location=device))
     model.eval()
 
     with torch.no_grad():
@@ -70,14 +71,14 @@ def predict_proba(latest_60_feat, latest_regime):
 
     STATE_NAMES = {0: "Trending-Down", 1: "Trans-Down", 2: "Trans-Up", 3: "Trending-Up"}
 
-
+    
     return {
         "predicted_state": STATE_NAMES[predicted_class],
         "probabilities": {
-            STATE_NAMES: float(probabilities),
-            STATE_NAMES[21]: float(probabilities[21]),
-            STATE_NAMES[22]: float(probabilities[22]),
-            STATE_NAMES[2]: float(probabilities[2]),
+            STATE_NAMES[0]: float(probabilities[0][0]),
+            STATE_NAMES[1]: float(probabilities[0][1]),
+            STATE_NAMES[2]: float(probabilities[0][2]),
+            STATE_NAMES[3]: float(probabilities[0][3]),
         }
     }
 
