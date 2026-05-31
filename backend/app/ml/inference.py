@@ -39,11 +39,11 @@ def load_data(data_path):
     if len(feat_clean) < 60:
         return {"error": "Valid data length after feature engineering is less than 60 days."}
     latest_60_feat = feat_clean.values[-60:]
-    return latest_60_feat, latest_regime
+    return latest_60_feat, latest_regime, idx
     
 
 
-def predict_proba(latest_60_feat, latest_regime):
+def predict_proba(latest_60_feat, latest_regime, idx):
     print("predicting...")
 
     config = ModelConfig()
@@ -73,6 +73,7 @@ def predict_proba(latest_60_feat, latest_regime):
 
     
     return {
+        "last day: ": idx[-1].strftime("%Y-%m-%d"),
         "predicted_state": STATE_NAMES[predicted_class],
         "probabilities": {
             STATE_NAMES[0]: float(probabilities[0][0]),
