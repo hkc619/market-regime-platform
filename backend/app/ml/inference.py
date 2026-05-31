@@ -7,6 +7,7 @@ import sys
 sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
 
 from ml.decomposition import dual_ewm_decomposition
+from ml.label_generation import generate_predict_label
 from ml.features import features
 from ml.model import DualCNNGRUFusion
 from ml.data_loader import load_ohlcv, load_macro_daily, load_cpi
@@ -29,13 +30,12 @@ def load_data(data_path):
 
     feat, adx_aligned, adx_regime, di_bull = features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close,
                                 trend_fast, trend_slow, cycle_comp, noise_comp, vix_s, yr10_s, yr2_s, cpi_s)
-    print(feat.shape)
-    print("\n")
-    print(adx_regime.shape)
-    valid_idx = feat.dropna().index
-    feat_clean = feat.loc[valid_idx]
-    regime_clean = adx_regime.loc[valid_idx].values.astype(np.int64)
+    idx = spy_close.index
+
+    feat_clean, regime_clean = generate_predict_label(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bull, idx)
+    print("regime_clean.shape: ", regime_clean.shape)
     latest_regime = regime_clean[-1]
+    
     if len(feat_clean) < 60:
         return {"error": "Valid data length after feature engineering is less than 60 days."}
     latest_60_feat = feat_clean.values[-60:]

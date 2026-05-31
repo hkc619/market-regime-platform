@@ -59,7 +59,7 @@ def train():
         feat, adx_aligned, adx_regime, trend_fast, trend_slow, 
         di_bull, idx, train_frac = config.TRAIN_FRAC, val_frac = config.VAL_FRAC
         )
-
+    print("\n regime_clean shape: ", regime_clean.shape)
     print("\n" + "=" * 70)
     print("  SECTION 6: DUAL-SCALE SEQUENCE DATASET  [v2: 20-day + 60-day]")
     print("=" * 70)
@@ -73,7 +73,7 @@ def train():
     print("  SECTION 7: DUAL-SCALE CNN-GRU + REGIME CONDITIONING  [v2]")
     print("=" * 70)
 
-
+    '''
     print("\n" + "=" * 70)
     print("  SECTION 8: TRAINING MODELS")
     print("=" * 70)
@@ -87,6 +87,7 @@ def train():
             "preds": preds, "trues": trues, "history": history
     
         }
+    '''
 
 
 if __name__ == "__main__":

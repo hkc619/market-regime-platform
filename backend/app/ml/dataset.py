@@ -20,6 +20,7 @@ def build_dataset(feat_clean, labels_clean, regime_clean, split_tr, split_val, s
     feat_scaled_all   = scaler.transform(feat_clean.values)
     label_arr         = labels_clean.values
     regime_arr        = regime_clean.values.astype(np.int64)
+    print("regime_arr: ", regime_arr)
 
     def build_dual_sequences(X, y, regime, seq_short, seq_long):
         """
