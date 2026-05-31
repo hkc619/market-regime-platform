@@ -1,0 +1,10 @@
+{
+    "last day: ": "2025-12-31",
+    "predicted_state": "Trans-Up",
+    "probabilities": {
+        "Trending-Down": 0.004556646570563316,
+        "Trans-Down": 0.000556760118342936,
+        "Trans-Up": 0.9535136818885803,
+        "Trending-Up": 0.04137295112013817
+    }
+}
