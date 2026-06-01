@@ -23,14 +23,18 @@ def load_data(data_path):
     qqq_close = load_ohlcv(data_path, "QQQ", "Close")
     tlt_close = load_ohlcv(data_path, "TLT", "Close")
 
+    ticker_close, ticker_vol, ticker_high, ticker_low = spy_close, spy_vol, spy_high, spy_low
+    sup1_close, sup2_close = qqq_close, tlt_close
+
     vix_s, yr10_s, yr2_s = load_macro_daily(data_path)
     cpi_s = load_cpi(data_path)
 
     trend_fast, trend_slow, cycle_comp, noise_comp = dual_ewm_decomposition(spy_close)
 
-    feat, adx_aligned, adx_regime, di_bull = features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close,
+    feat, adx_aligned, adx_regime, di_bull = features(ticker_close, ticker_vol, ticker_high, ticker_low,
+                                sup1_close, sup2_close,
                                 trend_fast, trend_slow, cycle_comp, noise_comp, vix_s, yr10_s, yr2_s, cpi_s)
-    idx = spy_close.index
+    idx = ticker_close.index
 
     feat_clean, regime_clean = generate_predict_label(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bull, idx)
     print("regime_clean.shape: ", regime_clean.shape)

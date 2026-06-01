@@ -13,6 +13,7 @@ def butterworth_noncausal(arr, cutoff=0.04, order=4):
     b, a = butter(order, cutoff, btype="low", analog=False)
     return filtfilt(b, a, arr)
 
+## series: ticker's close price 
 def dual_ewm_decomposition(series):
     """
     Causal decomposition into 3 components:

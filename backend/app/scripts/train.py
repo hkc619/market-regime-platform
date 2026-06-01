@@ -25,18 +25,18 @@ def train():
     spy_low = load_ohlcv(data_path, "SPY", "Low")
     qqq_close = load_ohlcv(data_path, "QQQ", "Close")
     tlt_close = load_ohlcv(data_path, "TLT", "Close")
-
+    
     vix_s, yr10_s, yr2_s = load_macro_daily(data_path)
     cpi_s = load_cpi(data_path)
+
+    ticker_close, ticker_vol, ticker_high, ticker_low = spy_close, spy_vol, spy_high, spy_low
+    sup1_close, sup2_close = qqq_close, tlt_close
 
     print("\n" + "=" * 70)
     print("  SECTION 2: DUAL-SCALE CAUSAL SIGNAL DECOMPOSITION  [v2: +cycle]")
     print("=" * 70)
 
-    spy_arr    = spy_close.values.astype(float)
-    #trend_viz  = butterworth_noncausal(spy_arr)  # viz only
-
-    trend_fast, trend_slow, cycle_comp, noise_comp = dual_ewm_decomposition(spy_close)
+    trend_fast, trend_slow, cycle_comp, noise_comp = dual_ewm_decomposition(ticker_close)
 
     print(f"  trend_fast (EWM-20) σ  : ${trend_fast.std():.2f}")
     print(f"  trend_slow (EWM-60) σ  : ${trend_slow.std():.2f}")
@@ -47,13 +47,14 @@ def train():
     print("  SECTION 3: FEATURE ENGINEERING  [v2: +ADX +S/R +delta +composite]")
     print("=" * 70)
 
-    feat, adx_aligned, adx_regime, di_bull = features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close,
+    feat, adx_aligned, adx_regime, di_bull = features(ticker_close, ticker_vol, ticker_high, ticker_low,
+                                sup1_close, sup2_close,
                                 trend_fast, trend_slow, cycle_comp, noise_comp, vix_s, yr10_s, yr2_s, cpi_s)
 
     print("\n" + "=" * 70)
     print("  SECTION 4: TREND-STATE LABELS  [v2: current regime, not fwd return]")
     print("=" * 70)
-    idx = spy_close.index
+    idx = ticker_close.index
 
     feat_clean, labels_clean, regime_clean, split_tr, split_val, scaler = label_generate(
         feat, adx_aligned, adx_regime, trend_fast, trend_slow, 
