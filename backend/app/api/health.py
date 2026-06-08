@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 
 router = APIRouter(tags=["Health"])
+
 @router.get("/health")
 def health_check(request: Request):
     model_state = request.app.state.model_state

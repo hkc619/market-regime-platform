@@ -6,13 +6,14 @@ from core.model_state import ModelState
 from services.model_registry import load_cnn_gru_model
 from ml.model import DualCNNGRUFusion
 from api.health import router as health_router
+from api.prediction import router as prediction_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.model_state = ModelState() ## construct a global (for all fastapi service) instance of modelstate class
 
     try:
-        loaded = load_cnn_gru_model(version="v1", device="cpu")
+        loaded = load_cnn_gru_model(version="v2", device="cpu")
 
         app.state.model_state.model_loaded = True
         app.state.model_state.model: loaded["model"]
@@ -47,3 +48,4 @@ async def root():
 ## middleware
 
 app.include_router(health_router)
+app.include_router(prediction_router)
