@@ -177,7 +177,7 @@
         "Transition-Down",
         "Trending-Down"
       ],
-      "assets": ["SPY", "QQQ", "TLT"],
+      "assets": ["SPY"],
       "data_sources": {
         "price_sheets": ["SPY", "QQQ", "TLT"],
         "macro_daily": "Macro_daily",

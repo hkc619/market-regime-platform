@@ -8,6 +8,7 @@ from ml.model import DualCNNGRUFusion
 from api.health import router as health_router
 from api.prediction import router as prediction_router
 from api.model import router as model_router
+from api.support import router as support_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,3 +53,4 @@ async def root():
 app.include_router(health_router)
 app.include_router(prediction_router)
 app.include_router(model_router)
+app.include_router(support_router)
