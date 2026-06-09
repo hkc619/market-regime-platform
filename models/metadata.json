@@ -1,7 +1,7 @@
 {
   "models": [
     {
-      "version": "v1",
+      "version": "v0",
       "model_name": "CNN-GRU Fusion",
       "task": "Market Regime Classification",
       "num_classes": 4,
@@ -20,185 +20,6 @@
       "input_config": {
   "window_size": 60,
   "target_asset": "SPY",
-  "base_feature_columns": [
-    "trend_fast_slope_5",
-    "trend_fast_slope_20",
-    "trend_slow_slope_20",
-    "trend_slow_slope_60",
-    "trend_accel",
-    "trend_accel_slow",
-    "trend_fast_vs_slow",
-    "trend_cross_signal",
-    "trend_cross_change",
-    "price_vs_fast",
-    "price_vs_slow",
-
-    "cycle_level",
-    "cycle_slope",
-    "cycle_zscore",
-    "noise_abs_20",
-
-    "adx_14",
-    "adx_zscore_60",
-    "di_diff",
-    "adx_trend_strength",
-
-    "ma_cross_5_20",
-    "ma_cross_20_50",
-    "ma_cross_50_200",
-    "price_vs_200d",
-    "ma_stack_score",
-
-    "dist_swing_high",
-    "dist_swing_low",
-    "dist_52w_high",
-    "dist_52w_low",
-    "bb_position",
-    "bb_width",
-
-    "spy_ret_5d",
-    "spy_vol_5d",
-    "spy_ret_10d",
-    "spy_vol_10d",
-    "spy_ret_20d",
-    "spy_vol_20d",
-    "spy_ret_60d",
-    "spy_vol_60d",
-    "rsi_14",
-    "vol_ratio_20",
-
-    "qqq_ret_20d",
-    "tlt_ret_20d",
-    "spy_qqq_spread",
-    "spy_tlt_spread",
-
-    "trend_concordance",
-    "equity_bond_diverge",
-
-    "risk_off_composite",
-    "risk_off_direction",
-
-    "vix_level",
-    "vix_change_5d",
-    "vix_zscore_60d",
-    "yield_spread",
-    "yield_spread_ch5",
-    "yield_10yr",
-    "cpi_yoy",
-    "cpi_change_3m"
-  ],
-  "delta_feature_columns": [
-    "trend_fast_slope_5",
-    "trend_fast_vs_slow",
-    "trend_cross_signal",
-    "adx_14",
-    "di_diff",
-    "ma_stack_score",
-    "bb_position",
-    "price_vs_fast",
-    "price_vs_slow",
-    "cycle_level",
-    "cycle_zscore",
-    "vix_level",
-    "yield_spread",
-    "risk_off_composite",
-    "trend_concordance",
-    "spy_ret_5d",
-    "rsi_14"
-  ],
-  "feature_generation": {
-    "uses_low_frequency_trend": true,
-    "uses_cycle_component": true,
-    "uses_noise_component": true,
-    "uses_adx_features": true,
-    "uses_moving_average_stack": true,
-    "uses_support_resistance_features": true,
-    "uses_bollinger_band_features": true,
-    "uses_cross_asset_features": true,
-    "uses_macro_features": true,
-    "uses_delta_features": true
-  },
-  "feature_groups": {
-    "trend_structure": [
-      "trend_fast_slope_5",
-      "trend_fast_slope_20",
-      "trend_slow_slope_20",
-      "trend_slow_slope_60",
-      "trend_accel",
-      "trend_accel_slow",
-      "trend_fast_vs_slow",
-      "trend_cross_signal",
-      "trend_cross_change",
-      "price_vs_fast",
-      "price_vs_slow"
-    ],
-    "cycle_and_noise": [
-      "cycle_level",
-      "cycle_slope",
-      "cycle_zscore",
-      "noise_abs_20"
-    ],
-    "adx_trend_strength": [
-      "adx_14",
-      "adx_zscore_60",
-      "di_diff",
-      "adx_trend_strength"
-    ],
-    "moving_average_stack": [
-      "ma_cross_5_20",
-      "ma_cross_20_50",
-      "ma_cross_50_200",
-      "price_vs_200d",
-      "ma_stack_score"
-    ],
-    "support_resistance": [
-      "dist_swing_high",
-      "dist_swing_low",
-      "dist_52w_high",
-      "dist_52w_low",
-      "bb_position",
-      "bb_width"
-    ],
-    "price_volume": [
-      "spy_ret_5d",
-      "spy_vol_5d",
-      "spy_ret_10d",
-      "spy_vol_10d",
-      "spy_ret_20d",
-      "spy_vol_20d",
-      "spy_ret_60d",
-      "spy_vol_60d",
-      "rsi_14",
-      "vol_ratio_20"
-    ],
-    "cross_asset": [
-      "qqq_ret_20d",
-      "tlt_ret_20d",
-      "spy_qqq_spread",
-      "spy_tlt_spread",
-      "xlf_xle_rel",
-      "trend_concordance",
-      "equity_bond_diverge"
-    ],
-    "risk_on_off": [
-      "risk_off_composite",
-      "risk_off_direction"
-    ],
-    "macro": [
-      "vix_level",
-      "vix_change_5d",
-      "vix_zscore_60d",
-      "yield_spread",
-      "yield_spread_ch5",
-      "yield_10yr",
-      "gold_ret_20d",
-      "gold_spy_ratio",
-      "move_level",
-      "move_zscore_60d",
-      "cpi_yoy",
-      "cpi_change_3m"
-    ]
-  },
   "num_base_features": 56,
   "num_delta_features": 17,
   "num_total_features_per_timestep": 73,
@@ -207,7 +28,7 @@
       "model_config": {
         "architecture": "CNN-GRU",
         "framework": "PyTorch",
-        "checkpoint_path": "models/cnn_gru_v1.pt"
+        "checkpoint_path": "/Users/hkc619/Documents/PY/project/market-regime-platform/models/fusion_model_v0.pth"
       },
       "training_config": {
         "train_split": "chronological",
@@ -261,6 +82,172 @@
 },
       "created_at": "2026-05-27",
       "notes": "First production-style exported CNN-GRU model for market regime classification."
+    },
+    {
+      "version": "v1",
+      "model_name": "CNN-GRU Fusion v1",
+      "task": "Market Regime Classification",
+      "num_classes": 4,
+      "classes": [
+        "Trending-Up",
+        "Transition-Up",
+        "Transition-Down",
+        "Trending-Down"
+      ],
+      "assets": ["SPY", "QQQ", "TLT"],
+      "data_sources": {
+        "price_sheets": ["SPY", "QQQ", "TLT"],
+        "macro_daily": "Macro_daily",
+        "macro_monthly": "Macro_monthly"
+      },
+      "input_config": {
+  "window_size": 60,
+  "target_asset": "SPY",
+  "num_base_features": 56,
+  "num_delta_features": 17,
+  "num_total_features_per_timestep": 73,
+  "notes": "Base features are generated before sequence construction. Delta features are one-step changes of selected informative features and are stacked onto the input sequence at sequence-build time."
+},
+      "model_config": {
+        "architecture": "CNN-GRU",
+        "framework": "PyTorch",
+        "checkpoint_path": "/Users/hkc619/Documents/PY/project/market-regime-platform/models/fusion_v1.pth"
+      },
+      "training_config": {
+        "train_split": "chronological",
+        "shuffle": false,
+        "lookahead_bias_control": true
+      },
+      "metrics": {
+  "overall": {
+    "accuracy": 0.8365,
+    "macro_f1": 0.8193,
+    "total_support": 1572,
+    "classification_report": {
+      "Trending-Down": {
+        "precision": 0.82,
+        "recall": 0.99,
+        "f1_score": 0.89,
+        "support": 225
+      },
+      "Trans-Down": {
+        "precision": 0.64,
+        "recall": 0.79,
+        "f1_score": 0.71,
+        "support": 130
+      },
+      "Trans-Up": {
+        "precision": 0.80,
+        "recall": 0.86,
+        "f1_score": 0.83,
+        "support": 492
+      },
+      "Trending-Up": {
+        "precision": 0.92,
+        "recall": 0.78,
+        "f1_score": 0.85,
+        "support": 725
+      },
+      "macro_avg": {
+        "precision": 0.80,
+        "recall": 0.85,
+        "f1_score": 0.82,
+        "support": 1572
+      },
+      "weighted_avg": {
+        "precision": 0.85,
+        "recall": 0.84,
+        "f1_score": 0.84,
+        "support": 1572
+      }
+    }
+  }
+},
+      "created_at": "2026-05-29",
+      "notes": "First production-style exported CNN-GRU model for market regime classification."
+    },
+        {
+      "version": "v2",
+      "model_name": "CNN-GRU Fusion v2",
+      "task": "Market Regime Classification.",
+      "num_classes": 4,
+      "classes": [
+        "Trending-Up",
+        "Transition-Up",
+        "Transition-Down",
+        "Trending-Down"
+      ],
+      "assets": ["SPY", "QQQ", "TLT"],
+      "data_sources": {
+        "price_sheets": ["SPY", "QQQ", "TLT"],
+        "macro_daily": "Macro_daily",
+        "macro_monthly": "Macro_monthly"
+      },
+      "input_config": {
+  "window_size": 60,
+  "target_asset": "SPY",
+  "num_base_features": 56,
+  "num_delta_features": 17,
+  "num_total_features_per_timestep": 73,
+  "notes": "Base features are generated before sequence construction. Delta features are one-step changes of selected informative features and are stacked onto the input sequence at sequence-build time."
+},
+      "model_config": {
+        "architecture": "CNN-GRU",
+        "framework": "PyTorch",
+        "checkpoint_path": "/Users/hkc619/Documents/PY/project/market-regime-platform/models/fusion_v2.pth"
+      },
+      "training_config": {
+        "train_split": "chronological",
+        "shuffle": false,
+        "lookahead_bias_control": true
+      },
+      "metrics": {
+  "overall": {
+    "accuracy": 0.8365,
+    "macro_f1": 0.8193,
+    "total_support": 1572,
+    "classification_report": {
+      "Trending-Down": {
+        "precision": 0.82,
+        "recall": 0.99,
+        "f1_score": 0.89,
+        "support": 225
+      },
+      "Trans-Down": {
+        "precision": 0.64,
+        "recall": 0.79,
+        "f1_score": 0.71,
+        "support": 130
+      },
+      "Trans-Up": {
+        "precision": 0.80,
+        "recall": 0.86,
+        "f1_score": 0.83,
+        "support": 492
+      },
+      "Trending-Up": {
+        "precision": 0.92,
+        "recall": 0.78,
+        "f1_score": 0.85,
+        "support": 725
+      },
+      "macro_avg": {
+        "precision": 0.80,
+        "recall": 0.85,
+        "f1_score": 0.82,
+        "support": 1572
+      },
+      "weighted_avg": {
+        "precision": 0.85,
+        "recall": 0.84,
+        "f1_score": 0.84,
+        "support": 1572
+      }
+    }
+  }
+},
+      "created_at": "2026-05-31",
+      "notes": "First production-style exported CNN-GRU model for market regime classification with scaler."
     }
   ]
 }

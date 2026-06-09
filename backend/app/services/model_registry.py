@@ -18,7 +18,7 @@ def load_metadata(metadata_path: Path = METADATA_PATH) -> dict[str, Any]:
     with metadata_path.open("r", encoding="utf-8") as f:
         return json.load(f)
     
-def get_model_metadata(version: str = "v1") -> dict[str, Any]:
+def get_model_metadata(version: str) -> dict[str, Any]:
     metadata = load_metadata()
 
     for model_info in metadata.get("models", []):
@@ -26,7 +26,7 @@ def get_model_metadata(version: str = "v1") -> dict[str, Any]:
             return model_info
     raise ModelLoadError(f"Model version not found: {version}")
 
-def load_cnn_gru_model(version: str = "v1", device: str = "cpu"):
+def load_cnn_gru_model(version: str, device: str = "cpu"):
     model_info = get_model_metadata(version)
 
     checkpoint_path = Path(model_info["model_config"]["checkpoint_path"])
@@ -58,5 +58,3 @@ def load_cnn_gru_model(version: str = "v1", device: str = "cpu"):
         "device": device,
         "version": version,
     }
-
-print(load_cnn_gru_model())

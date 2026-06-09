@@ -7,6 +7,7 @@ from services.model_registry import load_cnn_gru_model
 from ml.model import DualCNNGRUFusion
 from api.health import router as health_router
 from api.prediction import router as prediction_router
+from api.model import router as model_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,15 +15,16 @@ async def lifespan(app: FastAPI):
 
     try:
         loaded = load_cnn_gru_model(version="v2", device="cpu")
-
+        
         app.state.model_state.model_loaded = True
-        app.state.model_state.model: loaded["model"]
-        app.state.model_state.metadata: loaded["metadata"]
-        app.state.model_state.version: loaded["version"]
-        app.state.model_state.device: loaded["device"]
-        app.state.model_state.error: None
+        app.state.model_state.model = loaded["model"]
+        app.state.model_state.metadata = loaded["metadata"]
+        app.state.model_state.version = loaded["version"]
+        app.state.model_state.device = loaded["device"]
+        app.state.model_state.error = None
 
         print("Model loaded successfully")
+        
 
     except Exception as e:
         app.state.model_state.model_loaded = False
@@ -31,7 +33,7 @@ async def lifespan(app: FastAPI):
         print(f"Model failed to load: {e}")
 
     yield
-
+    # shutdown cleanup
     app.state.model_state.model = None
     app.state.model_state.model_loaded = False
 
@@ -49,3 +51,4 @@ async def root():
 
 app.include_router(health_router)
 app.include_router(prediction_router)
+app.include_router(model_router)
