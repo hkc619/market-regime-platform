@@ -5,6 +5,7 @@ router = APIRouter(tags=["Prediction"])
 
 class PredictRequest(BaseModel):
     ticker: str
+    data_source: str
 
 @router.post("/predict")
 def predict(request_body: PredictRequest, request: Request):
@@ -29,6 +30,8 @@ def predict(request_body: PredictRequest, request: Request):
                 "requested_ticker": request_body.ticker.upper(),
             },
         )
+    
+    if not request_body:
 
     model = model_state.model
     metadata = model_state.metadata

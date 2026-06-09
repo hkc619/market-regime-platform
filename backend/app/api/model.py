@@ -24,5 +24,5 @@ def health_check(request: Request):
         }
 
     return {
-        'model': "Model info not found."
+        'Message': "Model info not found."
     }
