@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
+import sys
+
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
+from services.inference_service import load_data, predict_proba
+
 
 router = APIRouter(tags=["Prediction"])
 
@@ -42,6 +47,7 @@ def predict(request_body: PredictRequest, request: Request):
                 "expected_path": "/Users/hkc619/Documents/PY/project/market-regime-platform/models/metadata.json"
             }
         )
+
     '''
     if data_length < 60:
         raise HTTPException(
@@ -59,18 +65,9 @@ def predict(request_body: PredictRequest, request: Request):
 
     model = model_state.model
     metadata = model_state.metadata
+    device = model_state.device
 
-    result = {
-        "ticker": "SPY",
-        "model_version": model_state.version,
-        "predicted_state": "Trending-Up",
-        "confidence": 0.8231,
-        "probabilities": {
-            "Trending-Down": 0.0245,
-            "Trans-Down": 0.0612,
-            "Trans-Up": 0.0912,
-            "Trending-Up": 0.8231,
-        },
-    }
+    latest_60_feat, latest_regime, idx = load_data(data_source)
+    result = predict_proba(latest_60_feat, latest_regime, idx, device, model, metadata["model_config"]["scaler_path"])
 
     return result
