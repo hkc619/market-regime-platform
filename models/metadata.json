@@ -194,7 +194,8 @@
       "model_config": {
         "architecture": "CNN-GRU",
         "framework": "PyTorch",
-        "checkpoint_path": "/Users/hkc619/Documents/PY/project/market-regime-platform/models/fusion_v2.pth"
+        "checkpoint_path": "/Users/hkc619/Documents/PY/project/market-regime-platform/models/fusion_v2.pth",
+        "scaler_path": "/Users/hkc619/Documents/PY/project/market-regime-platform/models/scaler.pkl"
       },
       "training_config": {
         "train_split": "chronological",
