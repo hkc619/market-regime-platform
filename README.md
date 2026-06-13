@@ -213,3 +213,12 @@ python3 backend/app/scripts/predict.py
     }
 }
 ```
+
+## API Documentation
+
+FastAPI automatically generates interactive Swagger documentation from the Pydantic request/response schemas.
+
+Run the backend:
+
+```bash
+uvicorn backend.app.main:app --reload

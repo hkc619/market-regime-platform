@@ -12,3 +12,6 @@ __pycache__/
 models/
 deprecated/
 codebase_walkthrough.md
+
+logs/
+*.log
