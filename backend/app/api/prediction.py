@@ -5,7 +5,9 @@ import sys
 
 sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
 from services.inference_service import load_data, predict_proba
+from core.logging import get_logger
 
+logger = get_logger("prediction")
 
 router = APIRouter(tags=["Prediction"])
 
@@ -15,10 +17,23 @@ class PredictRequest(BaseModel):
 
 @router.post("/predict")
 def predict(request_body: PredictRequest, request: Request):
+    
     model_state = request.app.state.model_state
     data_source = Path(request_body.data_source)
-    print(data_source)
+    ticker = request_body.ticker.upper()
+    
+    logger.info(
+        "Prediction requested | request_id= | ticker=%s",
+        ticker,
+    )
+
     if not model_state.model_loaded:
+        logger.warning(
+            "Prediction rejected: model not loaded | request_id= | ticker=%s | error=%s",
+            ticker,
+            model_state.error,
+        )
+
         raise HTTPException(
             status_code=503,
             detail={
@@ -27,7 +42,12 @@ def predict(request_body: PredictRequest, request: Request):
             },
         )
 
-    if request_body.ticker.upper() != "SPY":
+    if ticker != "SPY":
+        logger.warning(
+            "Prediction rejected: unsupported ticker | request_id= | ticker=%s",
+            ticker,
+        )
+
         raise HTTPException(
             status_code=400,
             detail={
@@ -39,6 +59,11 @@ def predict(request_body: PredictRequest, request: Request):
         )
     
     if not data_source.exists():
+        logger.warning(
+            "Prediction rejected: data_source_not_found | request_id= | ticker=%s",
+            ticker,
+        )
+
         raise HTTPException(
             status_code=503,
             detail={
@@ -60,14 +85,31 @@ def predict(request_body: PredictRequest, request: Request):
             }
         )
     '''
+    try:
+        model = model_state.model
+        metadata = model_state.metadata
+        device = model_state.device
+
+        latest_60_feat, latest_regime, idx = load_data(data_source)
+        result = predict_proba(latest_60_feat, latest_regime, idx, device, model, metadata["model_config"]["scaler_path"])
+
+    except Exception:
+        logger.exception(
+            "Prediction failed | request_id= | ticker=%s",
+            ticker,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "prediction_failed",
+                "message": "Prediction failed due to an internal error.",
+            },
+        )
     
-
-
-    model = model_state.model
-    metadata = model_state.metadata
-    device = model_state.device
-
-    latest_60_feat, latest_regime, idx = load_data(data_source)
-    result = predict_proba(latest_60_feat, latest_regime, idx, device, model, metadata["model_config"]["scaler_path"])
-
     return result
+
+        
+
+
+
+
