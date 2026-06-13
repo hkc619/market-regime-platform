@@ -11,6 +11,187 @@ SPY
   - Trans-Down
   - Trans-Up
   - Trending-Up
+```json
+ "base_feature_columns": [
+    "trend_fast_slope_5",
+    "trend_fast_slope_20",
+    "trend_slow_slope_20",
+    "trend_slow_slope_60",
+    "trend_accel",
+    "trend_accel_slow",
+    "trend_fast_vs_slow",
+    "trend_cross_signal",
+    "trend_cross_change",
+    "price_vs_fast",
+    "price_vs_slow",
+
+    "cycle_level",
+    "cycle_slope",
+    "cycle_zscore",
+    "noise_abs_20",
+
+    "adx_14",
+    "adx_zscore_60",
+    "di_diff",
+    "adx_trend_strength",
+
+    "ma_cross_5_20",
+    "ma_cross_20_50",
+    "ma_cross_50_200",
+    "price_vs_200d",
+    "ma_stack_score",
+
+    "dist_swing_high",
+    "dist_swing_low",
+    "dist_52w_high",
+    "dist_52w_low",
+    "bb_position",
+    "bb_width",
+
+    "spy_ret_5d",
+    "spy_vol_5d",
+    "spy_ret_10d",
+    "spy_vol_10d",
+    "spy_ret_20d",
+    "spy_vol_20d",
+    "spy_ret_60d",
+    "spy_vol_60d",
+    "rsi_14",
+    "vol_ratio_20",
+
+    "qqq_ret_20d",
+    "tlt_ret_20d",
+    "spy_qqq_spread",
+    "spy_tlt_spread",
+
+    "trend_concordance",
+    "equity_bond_diverge",
+
+    "risk_off_composite",
+    "risk_off_direction",
+
+    "vix_level",
+    "vix_change_5d",
+    "vix_zscore_60d",
+    "yield_spread",
+    "yield_spread_ch5",
+    "yield_10yr",
+    "cpi_yoy",
+    "cpi_change_3m"
+  ],
+  "delta_feature_columns": [
+    "trend_fast_slope_5",
+    "trend_fast_vs_slow",
+    "trend_cross_signal",
+    "adx_14",
+    "di_diff",
+    "ma_stack_score",
+    "bb_position",
+    "price_vs_fast",
+    "price_vs_slow",
+    "cycle_level",
+    "cycle_zscore",
+    "vix_level",
+    "yield_spread",
+    "risk_off_composite",
+    "trend_concordance",
+    "spy_ret_5d",
+    "rsi_14"
+  ],
+  "feature_generation": {
+    "uses_low_frequency_trend": true,
+    "uses_cycle_component": true,
+    "uses_noise_component": true,
+    "uses_adx_features": true,
+    "uses_moving_average_stack": true,
+    "uses_support_resistance_features": true,
+    "uses_bollinger_band_features": true,
+    "uses_cross_asset_features": true,
+    "uses_macro_features": true,
+    "uses_delta_features": true
+  },
+  "feature_groups": {
+    "trend_structure": [
+      "trend_fast_slope_5",
+      "trend_fast_slope_20",
+      "trend_slow_slope_20",
+      "trend_slow_slope_60",
+      "trend_accel",
+      "trend_accel_slow",
+      "trend_fast_vs_slow",
+      "trend_cross_signal",
+      "trend_cross_change",
+      "price_vs_fast",
+      "price_vs_slow"
+    ],
+    "cycle_and_noise": [
+      "cycle_level",
+      "cycle_slope",
+      "cycle_zscore",
+      "noise_abs_20"
+    ],
+    "adx_trend_strength": [
+      "adx_14",
+      "adx_zscore_60",
+      "di_diff",
+      "adx_trend_strength"
+    ],
+    "moving_average_stack": [
+      "ma_cross_5_20",
+      "ma_cross_20_50",
+      "ma_cross_50_200",
+      "price_vs_200d",
+      "ma_stack_score"
+    ],
+    "support_resistance": [
+      "dist_swing_high",
+      "dist_swing_low",
+      "dist_52w_high",
+      "dist_52w_low",
+      "bb_position",
+      "bb_width"
+    ],
+    "price_volume": [
+      "spy_ret_5d",
+      "spy_vol_5d",
+      "spy_ret_10d",
+      "spy_vol_10d",
+      "spy_ret_20d",
+      "spy_vol_20d",
+      "spy_ret_60d",
+      "spy_vol_60d",
+      "rsi_14",
+      "vol_ratio_20"
+    ],
+    "cross_asset": [
+      "qqq_ret_20d",
+      "tlt_ret_20d",
+      "spy_qqq_spread",
+      "spy_tlt_spread",
+      "xlf_xle_rel",
+      "trend_concordance",
+      "equity_bond_diverge"
+    ],
+    "risk_on_off": [
+      "risk_off_composite",
+      "risk_off_direction"
+    ],
+    "macro": [
+      "vix_level",
+      "vix_change_5d",
+      "vix_zscore_60d",
+      "yield_spread",
+      "yield_spread_ch5",
+      "yield_10yr",
+      "gold_ret_20d",
+      "gold_spy_ratio",
+      "move_level",
+      "move_zscore_60d",
+      "cpi_yoy",
+      "cpi_change_3m"
+    ]
+  }
+```
 
 ## How to Run Local Prediction
 
@@ -32,3 +213,12 @@ python3 backend/app/scripts/predict.py
     }
 }
 ```
+
+## API Documentation
+
+FastAPI automatically generates interactive Swagger documentation from the Pydantic request/response schemas.
+
+Run the backend:
+
+```bash
+uvicorn backend.app.main:app --reload

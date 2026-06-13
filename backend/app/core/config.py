@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 import torch
 
 @dataclass
@@ -8,7 +9,7 @@ class DataConfig:
 
 @dataclass
 class TrainingConfig:
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    DEVICE :Any = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     TRAIN_FRAC: float = 0.50 
     VAL_FRAC:   float = 0.25
     SEQ_LEN_M:  int = 60    # medium-term lookback (CNN-medium + GRU)

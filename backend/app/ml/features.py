@@ -5,10 +5,13 @@ import sys
 sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
 from core.config import TrainingConfig
 
-def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_fast, trend_slow, cycle_comp, noise_comp, vix_s, yr10_s, yr2_s, cpi_s):
+def features(ticker_close, ticker_vol, ticker_high, ticker_low,
+            sup1_close, sup2_close, 
+            trend_fast, trend_slow, cycle_comp, noise_comp,
+              vix_s, yr10_s, yr2_s, cpi_s):
     config = TrainingConfig()
     np.random.seed(config.SEED)
-    idx = spy_close.index
+    idx = ticker_close.index
 
     def align(s, idx):
         return s.reindex(idx).ffill().bfill()
@@ -60,8 +63,8 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
     # ── Build master feature DataFrame ────────────────────────────────────────────
     feat = pd.DataFrame(index=idx)
 
-    p   = spy_close
-    vol = spy_vol.reindex(idx).ffill()
+    p   = ticker_close
+    vol = ticker_vol.reindex(idx).ffill()
     tf  = trend_fast.reindex(idx)
     ts  = trend_slow.reindex(idx)
     cy  = cycle_comp.reindex(idx)
@@ -90,7 +93,7 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
     feat["noise_abs_20"]        = ns.abs().rolling(20).mean() / (p + 1e-9)  # relative noise
 
     # ── [2b] ADX — trend strength ─────────────────────────────────────────────────
-    adx, di_p, di_m = compute_adx(spy_high, spy_low, p)
+    adx, di_p, di_m = compute_adx(ticker_high, ticker_low, p)
     di_bull = (di_p.reindex(idx).ffill() > di_m.reindex(idx).ffill()).astype(int)
     feat["adx_14"]              = adx
     feat["adx_zscore_60"]       = (adx - adx.rolling(60).mean()) / (adx.rolling(60).std() + 1e-9)
@@ -128,8 +131,8 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
 
     # ── [2e] Standard price/vol features (kept from v1) ───────────────────────────
     for w in [5, 10, 20, 60]:
-        feat[f"spy_ret_{w}d"]  = p.pct_change(w)
-        feat[f"spy_vol_{w}d"]  = p.pct_change().rolling(w).std()
+        feat[f"ticker_ret_{w}d"]  = p.pct_change(w)
+        feat[f"ticker_vol_{w}d"]  = p.pct_change().rolling(w).std()
 
     delta = p.diff()
     gain  = delta.clip(lower=0).rolling(14).mean()
@@ -138,25 +141,25 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
     feat["vol_ratio_20"]        = vol / (vol.rolling(20).mean() + 1e-9)
 
     # ── [6a] Cross-asset features ─────────────────────────────────────────────────
-    qqq = align(qqq_close, idx)
-    tlt = align(tlt_close, idx)
+    sup1 = align(sup1_close, idx)
+    sup2 = align(sup2_close, idx)
 
-    feat["qqq_ret_20d"]         = qqq.pct_change(20)
-    feat["tlt_ret_20d"]         = tlt.pct_change(20)
-    feat["spy_qqq_spread"]      = p.pct_change(20) - qqq.pct_change(20)
-    feat["spy_tlt_spread"]      = p.pct_change(20) - tlt.pct_change(20)
+    feat["sup1_ret_20d"]         = sup1.pct_change(20)
+    feat["sup2_ret_20d"]         = sup2.pct_change(20)
+    feat["ticker_sup1_spread"]      = p.pct_change(20) - sup1.pct_change(20)
+    feat["ticker_sup2_spread"]      = p.pct_change(20) - sup2.pct_change(20)
 
     # ── [6b] Trend concordance — are all indices trending together? ───────────────
     def ma_trend_signal(s, fast=20, slow=60):
         """+1 if fast MA > slow MA (uptrend), -1 otherwise."""
         return np.sign(s.rolling(fast).mean() - s.rolling(slow).mean())
 
-    tc_spy = ma_trend_signal(p)
-    tc_qqq = ma_trend_signal(qqq)
-    tc_tlt = ma_trend_signal(tlt)
+    tc_ticker = ma_trend_signal(p)
+    tc_sup1 = ma_trend_signal(sup1)
+    tc_sup2 = ma_trend_signal(sup2)
 
-    feat["trend_concordance"]   = (tc_spy + tc_qqq) / 2.0  # -1 to +1
-    feat["equity_bond_diverge"] = tc_spy - tc_tlt   # equity and bond trend divergence
+    feat["trend_concordance"]   = (tc_ticker + tc_sup1) / 2.0  # -1 to +1
+    feat["equity_bond_diverge"] = tc_ticker - tc_sup2   # equity and bond trend divergence
 
     # ── [6c] Risk-on/off composite ────────────────────────────────────────────────
     vix   = align(vix_s,  idx)
@@ -164,9 +167,9 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
     yr2   = align(yr2_s,  idx)
     cpi   = cpi_s.resample("D").ffill().reindex(idx).ffill().bfill()
     vix_z  = (vix  - vix.rolling(60).mean())  / (vix.rolling(60).std()  + 1e-9)
-    tlt_z  = (tlt  - tlt.rolling(60).mean())  / (tlt.rolling(60).std()  + 1e-9)
-    # Risk-off when VIX elevated + MOVE elevated + TLT rallying
-    feat["risk_off_composite"]  = (vix_z - tlt_z) / 2.0   # + = risk-off
+    sup2_z  = (sup2  - sup2.rolling(60).mean())  / (sup2.rolling(60).std()  + 1e-9)
+    # Risk-off when VIX elevated + MOVE elevated + sup2(tlt) rallying
+    feat["risk_off_composite"]  = (vix_z - sup2_z) / 2.0   # + = risk-off
     feat["risk_off_direction"]  = feat["risk_off_composite"].diff(5)
 
     # ── [6d] Macro features ───────────────────────────────────────────────────────
@@ -191,7 +194,7 @@ def features(spy_close, spy_vol, spy_high, spy_low, qqq_close, tlt_close, trend_
         "adx_14", "di_diff", "ma_stack_score", "bb_position",
         "price_vs_fast", "price_vs_slow", "cycle_level", "cycle_zscore",
         "vix_level", "yield_spread", "risk_off_composite",
-        "trend_concordance", "spy_ret_5d", "rsi_14"
+        "trend_concordance", "ticker_ret_5d", "rsi_14"
     ]
     DELTA_COLS = [c for c in DELTA_COLS if c in feat.columns]
 
