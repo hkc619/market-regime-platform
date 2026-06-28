@@ -43,34 +43,35 @@ def read_one_csv(csv_path: Path) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
     df = normalize_columns(df)
 
-    # 如果 CSV 裡沒有 ticker 欄位，就從檔名推 ticker
+    # if there is no ticker column, refer the ticker from file name
     if "ticker" not in df.columns:
         df["ticker"] = csv_path.stem.upper()
 
-    # 只保留需要的欄位
+    # check if there is missing column 
     missing = REQUIRED_COLUMNS - set(df.columns)
     if missing:
         raise ValueError(f"{csv_path.name} missing columns: {missing}")
 
+    # keep essential columns
     df = df[list(REQUIRED_COLUMNS)].copy()
 
-    # 統一 ticker 格式
+    # ticker formatting
     df["ticker"] = df["ticker"].astype(str).str.upper().str.strip()
 
-    # 日期轉換
+    # datatime 
     df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.date
 
-    # 數值欄位轉換
+    # numeric value
     price_columns = ["open", "high", "low", "close"]
     for col in price_columns:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
     df["volume"] = pd.to_numeric(df["volume"], errors="coerce").astype("Int64")
 
-    # 你的 CSV 沒有 adjusted_close，MVP 可以先等於 close
+    # set adjusted price as close price
     df["adjusted_close"] = df["close"]
 
-    # 資料來源
+    # data source
     df["source"] = csv_path.name
 
     return df
@@ -138,7 +139,7 @@ def load_all_market_price_csvs() -> pd.DataFrame:
 
     df = pd.concat(frames, ignore_index=True)
 
-    # 排序方便 debug
+    # sorting for easily debug
     df = df.sort_values(["ticker", "date"]).reset_index(drop=True)
 
     validate_market_prices(df)

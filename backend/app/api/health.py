@@ -1,4 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+import sys
+
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
+from db.session import get_db
+
 
 router = APIRouter(tags=["Health"])
 
@@ -22,4 +29,14 @@ def health_check(request: Request):
         "device": model_state.device,
         "error": model_state.error,
 
+    }
+
+@router.get("/health/db")
+def database_health_check(db: Session = Depends(get_db)):
+    result = db.execute(text("SELECT 1")).scalar()
+
+    return {
+        "status": "ok",
+        "database": "connected",
+        "result": result,
     }

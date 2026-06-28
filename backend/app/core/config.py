@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 from typing import Any
 import torch
+from pathlib import Path
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+ENV_FILE = BASE_DIR / ".env"
 
 @dataclass
 class DataConfig:
@@ -25,3 +31,14 @@ class ModelConfig:
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_path: str = "/Users/hkc619/Documents/PY/project/market-regime-platform/models/"
     data_path: str = "/Users/hkc619/Documents/PY/project/market-regime-platform/data/test_dataset.xlsx"
+
+class Settings(BaseSettings):
+    database_url: str
+
+    model_config = SettingsConfigDict(
+        env_file=ENV_FILE,
+        env_file_encoding="utf-8",
+    )
+
+
+settings = Settings()

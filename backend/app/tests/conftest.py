@@ -1,7 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
+import sys
 
-from backend.app.main import app
+sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend')
+from app.main import app
 
 
 @pytest.fixture

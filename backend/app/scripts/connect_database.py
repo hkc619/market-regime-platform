@@ -15,4 +15,4 @@ try:
         version = result.scalar()
         print(f"Connect successfully: {version}")
 except Exception as e:
-    print(f"Connect fail：{e}")
+    print(f"Connect fail:{e}")
