@@ -16,7 +16,7 @@ def get_market_data_status(
     db: Session = Depends(get_db),
 ):
     ticker = ticker.upper().strip()
-
+    
     query = text(
         """
         SELECT
@@ -76,3 +76,50 @@ def get_macro_daily_status(db: Session = Depends(get_db)):
         "yield_10yr_count": row["yield_10yr_count"],
         "yield_2yr_count": row["yield_2yr_count"],
     }
+
+
+@router.get("/window")
+def get_window(
+    ticker: str = Query(..., min_length=1),
+    lookback: int = Query(..., min=1),
+    db: Session = Depends(get_db),
+    ):
+    
+    ticker = ticker.upper().strip()
+    
+    query = text(
+        """
+        SELECT 
+            ticker,
+            COUNT(*) AS row_count,
+            MIN(date) AS start_date,
+            MAX(date) AS end_date
+        FROM (
+            SELECT ticker, date 
+            FROM market_prices
+            WHERE ticker = :ticker
+            ORDER BY date DESC
+            LIMIT :lookback
+        ) AS recent_prices
+        GROUP BY ticker;
+        
+        """
+        )
+    
+    row = db.execute(query, {
+        "ticker": ticker, 
+        "lookback": lookback
+        }).mappings().first()
+
+    
+    available_days = row["row_count"]
+
+    return {
+        "ticker": row["ticker"],
+        "available_days": available_days,
+        "required_days": lookback,
+        "is_ready": available_days == lookback,
+        "start_date": row["start_date"],
+        "end_date": row["end_date"],
+    }
+    
