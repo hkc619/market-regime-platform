@@ -38,7 +38,7 @@ def get_market_data_status(
             detail=f"No market price data found for ticker: {ticker}",
         )
 
-    required_days = 252
+    required_days = 312
     available_days = row["row_count"]
 
     return {

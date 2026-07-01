@@ -11,7 +11,7 @@ from repository.macro_repository import get_macro_daily, get_macro_monthly
 def get_latest_ticker_window(
         ticker,
         db: Session,
-        lookback: int = 252, 
+        lookback: int = 312, 
 ):
     ticker = ticker.upper().strip()
 
@@ -50,7 +50,7 @@ def get_macro_daily_window(db: Session):
 
 def get_macro_monthly_window(db: Session):
     
-    rows = get_macro_monthly(db=db)
+    rows = get_macro_monthly(db=db)          
 
     return rows
 

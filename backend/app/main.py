@@ -16,6 +16,7 @@ from api.prediction import router as prediction_router
 from api.model import router as model_router
 from api.support import router as support_router
 from api.data import router as data_router
+from app.api.prediction_db import router as prediction_db_router
 
 ## logging
 setup_logging()
@@ -81,3 +82,4 @@ app.include_router(prediction_router, prefix="/api/v1")
 app.include_router(model_router, prefix="/api/v1")
 app.include_router(support_router, prefix="/api/v1")
 app.include_router(data_router, prefix="/api/v1")
+app.include_router(prediction_db_router, prefix="/api/v1")

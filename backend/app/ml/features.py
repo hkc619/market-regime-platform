@@ -62,6 +62,7 @@ def features(ticker_close, ticker_vol, ticker_high, ticker_low,
 
     # ── Build master feature DataFrame ────────────────────────────────────────────
     feat = pd.DataFrame(index=idx)
+    
 
     p   = ticker_close
     vol = ticker_vol.reindex(idx).ffill()
@@ -69,6 +70,7 @@ def features(ticker_close, ticker_vol, ticker_high, ticker_low,
     ts  = trend_slow.reindex(idx)
     cy  = cycle_comp.reindex(idx)
     ns  = noise_comp.reindex(idx)
+    
 
     # ── [2a] Trend structure features ─────────────────────────────────────────────
     feat["trend_fast_slope_5"]  = tf.diff(5)  / (tf.shift(5)  + 1e-9)
@@ -181,7 +183,7 @@ def features(ticker_close, ticker_vol, ticker_high, ticker_low,
     feat["yield_10yr"]          = yr10
     feat["cpi_yoy"]             = cpi
     feat["cpi_change_3m"]       = cpi - cpi.shift(63)
-
+    
     n_features_base = feat.shape[1]
     print(f"  Base features: {n_features_base}")
 
@@ -201,11 +203,13 @@ def features(ticker_close, ticker_vol, ticker_high, ticker_low,
     delta_feat = feat[DELTA_COLS].diff(1)
     delta_feat.columns = [f"Δ{c}" for c in DELTA_COLS]
     feat = pd.concat([feat, delta_feat], axis=1)
-
+    # nan_rows = feat[feat.isna().any(axis=1)]
+    # print("len row:" , len(feat))
+    # print("len nan row:", len(nan_rows))
     n_features = feat.shape[1]
     print(f"  Total features (base + deltas): {n_features}")
     print(f"  Delta features added: {len(DELTA_COLS)}")
-
+    
     # ── [7] REGIME FEATURE — ADX regime for conditioning the fusion head ──────────
     # Discretised into 3 bins: Weak(0) / Moderate(1) / Strong(2) trend
     adx_aligned = adx.reindex(idx).ffill().bfill()
