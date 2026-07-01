@@ -15,3 +15,6 @@ codebase_walkthrough.md
 
 logs/
 *.log
+
+# Pytest cache
+*.pytest_cache

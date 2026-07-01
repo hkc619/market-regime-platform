@@ -31,7 +31,9 @@ def load_data(data_path):
 
     vix_s, yr10_s, yr2_s = load_macro_daily(data_path)
     cpi_s = load_cpi(data_path)
-
+    # print(ticker_close.index)
+    # print(vix_s.head())
+    # print(cpi_s.head())
     logger.info("Running preprocessing pipeline | ticker=%s", ticker)
     trend_fast, trend_slow, cycle_comp, noise_comp = dual_ewm_decomposition(spy_close)
 
@@ -40,7 +42,7 @@ def load_data(data_path):
                                 sup1_close, sup2_close,
                                 trend_fast, trend_slow, cycle_comp, noise_comp, vix_s, yr10_s, yr2_s, cpi_s)
     idx = ticker_close.index
-
+    
     feat_clean, regime_clean = generate_predict_label(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bull, idx)
     print("regime_clean.shape: ", regime_clean.shape)
     latest_regime = regime_clean.values[-1].astype(np.int64)
