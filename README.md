@@ -1,6 +1,17 @@
 # AI-Powered Market Regime Classification Platform
 A full-stack ML inference platform that decomposes equity price signals into low-frequency trend and residual components, classifies market trend regimes using a CNN-GRU model, and provides REST APIs, backtesting, and dashboard visualization for financial time-series analysis. ////
 SPY
+## Current Status 7/1
+Completed:
+- PostgreSQL schema established
+- OHLCV data imported
+- macro_daily data imported
+- FastAPI connected to database
+- DB-backed data_service implemented
+- raw market rows converted to inference-ready Series
+- feature engineering pipeline connected
+- model input generated successfully
+- POST endpoint can return prediction result
 
 ## Current Status 6/1
 
