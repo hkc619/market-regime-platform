@@ -16,7 +16,7 @@ router = APIRouter(prefix="/predictions", tags=["Prediction_db"])
 class PredictRequest(BaseModel):
     ticker: str
     
-@router.post("/last")
+@router.post("/latest")
 def predict(
     request_body: PredictRequest, 
     request: Request,
@@ -111,6 +111,11 @@ def predict(
             },
         )
     
+    # Prediction completed | ticker=SPY | raw_rows=332 | feature_rows=80 | input_shape=(60, 35) | predicted=Trending-Up
+    logger.info(
+        "Prediction completed | request_id= | ticker=%s | raw_rows= | feature_rows= | input_shape= | predicted=",
+        ticker,
+    )
     return result
 
         
