@@ -185,6 +185,7 @@ def get_latest_predict(
         db=db, 
         ticker=ticker
     )
+    
     return result
 
 
