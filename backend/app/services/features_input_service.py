@@ -60,6 +60,7 @@ def build_latest_model_input(raw):
         latest_60_feat=latest_60_feat,
         latest_regime=latest_regime,
         feature_rows=len(feat_clean),
+        feature_dim=feat_clean.shape[1],
         start_date=feat_clean.index[-60],
         end_date=feat_clean.index[-1],
     )

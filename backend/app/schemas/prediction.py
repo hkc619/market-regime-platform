@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
+from datetime import date, datetime
 
 
 class PredictRequest(BaseModel):
@@ -51,3 +52,33 @@ class BatchPredictResponse(BaseModel):
     model_version: str
     results: List[BatchPredictionItem]
     summary: BatchPredictSummary
+
+class LatestPredictionRequest(BaseModel):
+    ticker: str = Field(..., min_length=1, examples=["SPY"])
+
+
+class PredictionInputWindow(BaseModel):
+    raw_window_rows: int
+    feature_rows: int
+    model_input_rows: int
+    feature_dim: int
+    input_start_date: date
+    input_end_date: date
+
+
+class LatestPredictionResponse(BaseModel):
+    prediction_id: int
+
+    ticker: str
+    as_of_date: date
+
+    predicted_class: int
+    predicted_regime: str
+    confidence: float
+
+    probabilities: dict[str, float]
+
+    model_version: str
+    input_window: PredictionInputWindow
+
+    created_at: datetime

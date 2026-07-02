@@ -63,7 +63,7 @@ class ModelInputBundle:
     latest_regime: int | None
 
     feature_rows: int
-    # feature_dim: int
+    feature_dim: int
 
     start_date: pd.Timestamp
     end_date: pd.Timestamp
