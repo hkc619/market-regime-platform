@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi import APIRouter, Request, HTTPException, Depends, Query
 from pydantic import BaseModel
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -6,10 +6,11 @@ from sqlalchemy.orm import Session
 from app.services.inference_db_service import prepare_latest_inference_input
 from app.services.features_input_service import build_latest_model_input
 from app.services.inference import predict_proba
-from app.repository.prediction_repository import create_prediction_history
+from app.repository.prediction_repository import create_prediction_history, get_latest_prediction_by_ticker
 from app.core.logging import get_logger
 from app.db.session import get_db
 from app.core.model_config import RAW_LOOKBACK_DAYS, MODEL_VERSION
+
 
 logger = get_logger("prediction_db")
 
@@ -172,7 +173,20 @@ def predict(
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    
+@router.get("/latest")
+def get_latest_predict(
+    ticker: str = Query(..., min_length=1),
+    db: Session = Depends(get_db)
+    ):
+
+    ticker = ticker.upper().strip()
+
+    result = get_latest_prediction_by_ticker(
+        db=db, 
+        ticker=ticker
+    )
+    return result
+
 
         
     
