@@ -6,8 +6,10 @@ from sqlalchemy.orm import Session
 from app.services.inference_db_service import prepare_latest_inference_input
 from app.services.features_input_service import build_latest_model_input
 from app.services.inference import predict_proba
+from app.repository.prediction_repository import create_prediction_history
 from app.core.logging import get_logger
 from app.db.session import get_db
+from app.core.model_config import RAW_LOOKBACK_DAYS, MODEL_VERSION
 
 logger = get_logger("prediction_db")
 
@@ -94,9 +96,64 @@ def predict(
         metadata = model_state.metadata
         device = model_state.device
         
-        raw = prepare_latest_inference_input(db, ticker, sup0="QQQ", sup1="TLT", lookback=312)
+        raw = prepare_latest_inference_input(
+            db=db, 
+            ticker=ticker, sup0="QQQ", sup1="TLT", 
+            lookback=312
+        )
+
         bundle = build_latest_model_input(raw)
-        result = predict_proba(bundle, device, model, metadata["model_config"]["scaler_path"])
+
+        prediction = predict_proba(bundle, device, model, metadata["model_config"]["scaler_path"])
+        print(prediction)
+        saved = create_prediction_history(
+            db=db,
+            ticker=ticker,
+            as_of_date=bundle.end_date,
+            predicted_class=prediction["predicted_class"],
+            predicted_regime=prediction["predicted_regime"],
+            confidence=prediction["confidence"],
+            probabilities=prediction["probabilities"],
+            model_version=MODEL_VERSION,
+            raw_window_rows=len(raw.ticker_close),
+            feature_rows=bundle.feature_rows,
+            model_input_rows=bundle.latest_60_feat.shape[0],
+            feature_dim=bundle.feature_dim,
+            input_start_date=bundle.start_date,
+            input_end_date=bundle.end_date,
+        )
+
+        # Prediction completed 
+        logger.info(
+        "Prediction completed | request_id= | ticker=%s | raw_rows= | feature_rows= | input_shape= | predicted=",
+        ticker,
+        )
+
+        return {
+            "prediction_id": saved["id"],
+            "ticker": saved["ticker"],
+            "as_of_date": saved["as_of_date"],
+            "predicted_class": saved["predicted_class"],
+            "predicted_regime": saved["predicted_regime"],
+            "confidence": float(saved["confidence"]),
+            "probabilities": {
+                "Trending-Down": float(saved["prob_trending_down"]),
+                "Transition-Down": float(saved["prob_transition_down"]),
+                "Transition-Up": float(saved["prob_transition_up"]),
+                "Trending-Up": float(saved["prob_trending_up"]),
+            },
+            "model_version": saved["model_version"],
+            "input_window": {
+                "raw_window_rows": saved["raw_window_rows"],
+                "feature_rows": saved["feature_rows"],
+                "model_input_rows": saved["model_input_rows"],
+                "feature_dim": saved["feature_dim"],
+                "input_start_date": saved["input_start_date"],
+                "input_end_date": saved["input_end_date"],
+            },
+            "created_at": saved["created_at"],
+        }
+    
 
     except Exception:
         logger.exception(
@@ -109,17 +166,16 @@ def predict(
                 "error": "prediction_failed",
                 "message": "Prediction failed due to an internal error.",
             },
-        )
-    
-    # Prediction completed | ticker=SPY | raw_rows=332 | feature_rows=80 | input_shape=(60, 35) | predicted=Trending-Up
-    logger.info(
-        "Prediction completed | request_id= | ticker=%s | raw_rows= | feature_rows= | input_shape= | predicted=",
-        ticker,
-    )
-    return result
-
+        ) 
         
 
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    
+
+        
+    
 
 
 

@@ -24,13 +24,17 @@ def predict_proba(bundle, device, model, scaler):
         logits = model(Xs_tensor, Xm_tensor, r_tensor)
         probabilities = torch.nn.functional.softmax(logits, dim=1).cpu().numpy()
         predicted_class = np.argmax(probabilities)
+        confidence_value = float(probabilities[0][predicted_class])
 
-    STATE_NAMES = {0: "Trending-Down", 1: "Trans-Down", 2: "Trans-Up", 3: "Trending-Up"}
+
+    STATE_NAMES = {0: "Trending-Down", 1: "Transition-Down", 2: "Transition-Up", 3: "Trending-Up"}
     
     result = {
         "ticker": bundle.ticker,
         "last day: ": bundle.end_date.strftime("%Y-%m-%d"),
-        "predicted_state": STATE_NAMES[predicted_class],
+        "confidence": confidence_value,
+        "predicted_class": predicted_class,
+        "predicted_regime": STATE_NAMES[predicted_class],
         "probabilities": {
             STATE_NAMES[0]: float(probabilities[0][0]),
             STATE_NAMES[1]: float(probabilities[0][1]),
@@ -40,8 +44,8 @@ def predict_proba(bundle, device, model, scaler):
     }
 
     logger.info(
-        "Inference pipeline completed | ticker=%s | predicted_state= | confidence=",
-        bundle.ticker
+        "Inference pipeline completed | ticker=%s | predicted_state=%s | confidence=%d ",
+        bundle.ticker, STATE_NAMES[predicted_class], confidence_value
     )
     
     return result

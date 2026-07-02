@@ -10,7 +10,7 @@ def test_post_latest_prediction_success(client):
     if response.status_code == 200:
         data = response.json()
 
-        assert data["predicted_state"]
+        assert data["predicted_regime"]
         prob_dict = data["probabilities"]
         prob_sum = sum(prob_dict.values())
 
