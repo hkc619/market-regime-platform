@@ -62,7 +62,7 @@ def predict(
         )
 
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail={
                 "error": "unsupported_ticker",
                 "message": "Model v1 currently supports validated inference only for SPY.",
