@@ -14,7 +14,10 @@ from app.core.exceptions import (
 from app.core.logging import get_logger
 from app.db.session import get_db
 
-
+from app.schemas.prediction import (
+    LatestPredictionRequest,
+    LatestPredictionResponse,
+)
 
 logger = get_logger("prediction_db")
 
@@ -23,7 +26,7 @@ router = APIRouter(prefix="/predictions", tags=["Prediction_db"])
 class PredictRequest(BaseModel):
     ticker: str
     
-@router.post("/latest")
+@router.post("/latest", response_model=LatestPredictionRequest)
 def predict(
         request_body: PredictRequest, 
         request: Request,
@@ -104,7 +107,7 @@ def predict(
     
     
 
-@router.get("/latest")
+@router.get("/latest", response_model=LatestPredictionResponse)
 def get_latest_predict(
     ticker: str = Query(..., min_length=1),
     db: Session = Depends(get_db)
@@ -117,7 +120,36 @@ def get_latest_predict(
         ticker=ticker
     )
     
-    return result
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No prediction history found for ticker={ticker.upper()}",
+        )
+
+    return {
+        "prediction_id": result["id"],
+        "ticker": result["ticker"],
+        "as_of_date": result["as_of_date"],
+        "predicted_class": result["predicted_class"],
+        "predicted_regime": result["predicted_regime"],
+        "confidence": float(result["confidence"]),
+        "probabilities": {
+            "Trending-Down": float(result["prob_trending_down"]),
+            "Transition-Down": float(result["prob_transition_down"]),
+            "Transition-Up": float(result["prob_transition_up"]),
+            "Trending-Up": float(result["prob_trending_up"]),
+        },
+        "model_version": result["model_version"],
+        "input_window": {
+            "raw_window_rows": result["raw_window_rows"],
+            "feature_rows": result["feature_rows"],
+            "model_input_rows": result["model_input_rows"],
+            "feature_dim": result["feature_dim"],
+            "input_start_date": result["input_start_date"],
+            "input_end_date": result["input_end_date"],
+        },
+        "created_at": result["created_at"],
+    }
 
 
         
