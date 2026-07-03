@@ -140,7 +140,7 @@ def main() -> None:
     print(df.head())
     print(df.tail())
     print(df.isna().sum())
-
+    
     upsert_macro_monthly(df)
 
     print(f"Upserted {len(df)} rows into macro_monthly.")

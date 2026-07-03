@@ -8,7 +8,6 @@ from core.model_state import ModelState
 from core.logging import setup_logging, get_logger
 
 from services.model_registry import load_cnn_gru_model
-from ml.model import DualCNNGRUFusion
 from middlewares.request_logging import RequestLoggingMiddleware
 
 from api.health import router as health_router

@@ -44,7 +44,6 @@ def load_data(data_path):
     idx = ticker_close.index
     
     feat_clean, regime_clean = generate_predict_label(feat, adx_aligned, adx_regime, trend_fast, trend_slow, di_bull, idx)
-    print("regime_clean.shape: ", regime_clean.shape)
     latest_regime = regime_clean.values[-1].astype(np.int64)
     
     if len(feat_clean) < 60:

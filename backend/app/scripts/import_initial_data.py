@@ -98,7 +98,6 @@ def validate_market_prices(df: pd.DataFrame) -> None:
     bad_nulls = null_counts[null_counts > 0]
 
     if not bad_nulls.empty:
-        print(bad_nulls)
         raise ValueError(f"Found missing values:\n{bad_nulls}")
 
     duplicated = df.duplicated(subset=["ticker", "date"], keep=False)

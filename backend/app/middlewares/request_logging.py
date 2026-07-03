@@ -15,10 +15,14 @@ logger = get_logger("request")
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
-        request_id = str(uuid.uuid4())
+        request_id = request.headers.get("X-Request-ID")
+        if not request_id:
+            request_id = str(uuid.uuid4())
+        request.state.request_id = request_id
+
         start_time = time.perf_counter()
 
-        request.state.request_id = request_id
+        
 
         logger.info(
             "Request started | request_id=%s | method=%s | path=%s | client=%s",
@@ -27,6 +31,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             request.url.path,
             request.client.host if request.client else None,
         )
+        
 
         try:
             response = await call_next(request)
