@@ -24,3 +24,6 @@ class ModelInferenceError(AppError):
 
 class PredictionSaveError(AppError):
     pass
+
+class MacroNotFoundError(AppError):
+    pass
