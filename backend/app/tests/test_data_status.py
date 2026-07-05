@@ -31,15 +31,15 @@ def test_get_macro_daily_status(client):
     assert data["end_date"] is not None
 
 def test_get_latest_window_success(client):
-    response = client.get("/api/v1/data/window?ticker=SPY&lookback=252")
+    response = client.get("/api/v1/data/window?ticker=SPY&lookback=312")
 
     assert response.status_code == 200
 
     data = response.json()
 
     assert data["ticker"] == "SPY"
-    assert data["available_days"] == 252
-    assert data["required_days"] == 252
+    assert data["available_days"] == 312
+    assert data["required_days"] == 312
     assert data["is_ready"] is True
     assert data["start_date"] is not None
     assert data["end_date"] is not None
