@@ -1,21 +1,19 @@
 from contextlib import asynccontextmanager ## Lifespan of FastAPI, what needs to do when server start and shut down
 from fastapi import FastAPI
-import sys
 
-sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
+from app.core.model_state import ModelState
+from app.core.logging import setup_logging, get_logger
 
-from core.model_state import ModelState
-from core.logging import setup_logging, get_logger
+from app.services.model_registry import load_cnn_gru_model
+from app.middlewares.request_logging import RequestLoggingMiddleware
 
-from services.model_registry import load_cnn_gru_model
-from middlewares.request_logging import RequestLoggingMiddleware
-
-from api.health import router as health_router
-from api.prediction import router as prediction_router
-from api.model import router as model_router
-from api.support import router as support_router
-from api.data import router as data_router
+from app.api.health import router as health_router
+from app.api.prediction import router as prediction_router
+from app.api.model import router as model_router
+from app.api.support import router as support_router
+from app.api.data import router as data_router
 from app.api.prediction_db import router as prediction_db_router
+from app.api.data_refresh import router as data_fresh_router
 
 ## logging
 setup_logging()
@@ -82,3 +80,4 @@ app.include_router(model_router, prefix="/api/v1")
 app.include_router(support_router, prefix="/api/v1")
 app.include_router(data_router, prefix="/api/v1")
 app.include_router(prediction_db_router, prefix="/api/v1")
+app.include_router(data_fresh_router, prefix="/api/v1")
