@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field
 
 class MarketRefreshRequest(BaseModel):
     ticker: str
-    # tickers: list[str] = Field(default=["SPY", "QQQ", "TLT"])
 
 
 class MarketRefreshResult(BaseModel):
@@ -16,6 +15,7 @@ class MarketRefreshResult(BaseModel):
     rows_fetched: int
     rows_inserted_or_updated: int
     status: str
+    message: str
 
 
 class MarketRefreshResponse(BaseModel):

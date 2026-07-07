@@ -7,6 +7,7 @@ from app.repository.data_refresh_repository import get_latest_ohlcv, upsert_mark
 from app.providers.yfinance_provider import fetch_market_data
 from app.providers.market_data_normalizer import normalize_market_data
 from app.core.logging import get_logger
+from app.core.exceptions import NoNewMarketDataError
 
 logger = get_logger(__name__)
 
@@ -63,18 +64,55 @@ def refresh_market_data(
             "rows_inserted_or_updated": 0,
             "status": "up_to_date",
         }
+    
+    try:
+        raw_df = fetch_market_data(
+            ticker=ticker, 
+            start_date=start_date, 
+            end_date=end_date
+        )
 
-    raw_df = fetch_market_data(
-        ticker=ticker, 
-        start_date=start_date, 
-        end_date=end_date
-    )
+    except NoNewMarketDataError as e:
+        logger.info(
+            "No new market data available | request_id=%s | ticker=%s | start_date=%s | end_date=%s",
+            request_id,
+            ticker,
+            start_date,
+            end_date,
+        )
+
+        return {
+            "ticker": ticker,
+            "latest_before": latest_before,
+            "latest_after": latest_before,
+            "rows_fetched": 0,
+            "rows_inserted_or_updated": 0,
+            "status": "no_new_data",
+            "message": e.message,
+        }
 
     rows = normalize_market_data(
         df=raw_df,
         ticker=ticker,
         source="yfinance",
     )
+
+    if not rows:
+        logger.info(
+            "Normalized market data is empty | request_id=%s | ticker=%s",
+            request_id,
+            ticker,
+        )
+
+        return {
+            "ticker": ticker,
+            "latest_before": latest_before,
+            "latest_after": latest_before,
+            "rows_fetched": 0,
+            "rows_inserted_or_updated": 0,
+            "status": "no_new_data",
+            "message": "Fetched data contained no usable market rows.",
+        }
 
     affected_rows = upsert_market_prices(
         db=db,
@@ -102,6 +140,7 @@ def refresh_market_data(
         "rows_fetched": len(rows),
         "rows_inserted_or_updated": affected_rows,
         "status": "success",
+        "message": "Market data refreshed successfully.",
     }
     
 

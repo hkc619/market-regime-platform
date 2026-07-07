@@ -27,3 +27,21 @@ class PredictionSaveError(AppError):
 
 class MacroNotFoundError(AppError):
     pass
+
+
+class AppError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(message)
+
+
+class ExternalDataFetchError(AppError):
+    pass
+
+
+class NoNewMarketDataError(AppError):
+    pass
+
+
+class InvalidExternalDataError(AppError):
+    pass
