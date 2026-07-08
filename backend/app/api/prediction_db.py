@@ -26,7 +26,7 @@ router = APIRouter(prefix="/predictions", tags=["Prediction_db"])
 class PredictRequest(BaseModel):
     ticker: str
     
-@router.post("/latest", response_model=LatestPredictionRequest)
+@router.post("/latest", response_model=LatestPredictionResponse)
 def predict(
         request_body: PredictRequest, 
         request: Request,

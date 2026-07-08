@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 from app.db.session import get_db
 from app.repository.data_refresh_repository import get_latest_ohlcv, upsert_market_prices
+from app.repository.data_update_log_repository import create_data_update_log
 from app.providers.yfinance_provider import fetch_market_data
 from app.providers.market_data_normalizer import normalize_market_data
 from app.core.logging import get_logger
@@ -56,6 +57,20 @@ def refresh_market_data(
     end_date = date.today() + timedelta(days=1)
 
     if start_date > end_date:
+        create_data_update_log(
+            db=db,
+            request_id=request_id,
+            data_type="market_price",
+            source="yfinance",
+            ticker=ticker,
+            start_date=start_date,
+            end_date=end_date,
+            status="up_to_date",
+            rows_fetched=0,
+            rows_inserted_or_updated=0,
+            error_message=None,
+        )
+        
         return {
             "ticker": ticker,
             "latest_before": latest_before,
@@ -79,6 +94,20 @@ def refresh_market_data(
             ticker,
             start_date,
             end_date,
+        )
+
+        create_data_update_log(
+            db=db,
+            request_id=request_id,
+            data_type="market_price",
+            source="yfinance",
+            ticker=ticker,
+            start_date=start_date,
+            end_date=end_date,
+            status="no_new_data",
+            rows_fetched=0,
+            rows_inserted_or_updated=0,
+            error_message=e.message,
         )
 
         return {
@@ -122,6 +151,20 @@ def refresh_market_data(
     latest_after = get_latest_market_date(
         db=db,
         ticker=ticker,
+    )
+
+    create_data_update_log(
+        db=db,
+        request_id=request_id,
+        data_type="market_price",
+        source="yfinance",
+        ticker=ticker,
+        start_date=start_date,
+        end_date=end_date,
+        status="success",
+        rows_fetched=len(rows),
+        rows_inserted_or_updated=affected_rows,
+        error_message=None,
     )
 
     logger.info(
