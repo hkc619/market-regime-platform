@@ -1,5 +1,5 @@
 def test_supported_assets(client):
-    response = client.get("/supported-assets")
+    response = client.get("/api/v1/supported-assets")
 
     assert response.status_code == 200
 

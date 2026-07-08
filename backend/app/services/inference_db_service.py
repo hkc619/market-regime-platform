@@ -3,6 +3,7 @@ from app.services.inference_input_service import market_rows_to_dataframe, macro
 from app.core.config import RawInferenceSeries
 
 def prepare_latest_inference_input(db, ticker: str, sup0: str, sup1: str, lookback: int = 312):
+    
     ticker_rows = get_latest_ticker_window(
     db=db,
     ticker=ticker,
@@ -14,6 +15,7 @@ def prepare_latest_inference_input(db, ticker: str, sup0: str, sup1: str, lookba
     ticker_vol = ticker_df["volume"]
     ticker_high = ticker_df["high"]
     ticker_low = ticker_df["low"]
+    
     # 2. supporting assets
     sup0_rows = get_latest_support_window(
     db=db,

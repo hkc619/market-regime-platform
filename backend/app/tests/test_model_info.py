@@ -1,5 +1,5 @@
 def test_model_info_returns_metadata(client):
-    response = client.get("/model-info")
+    response = client.get("/api/v1/model-info")
 
     assert response.status_code in [200, 503]
 

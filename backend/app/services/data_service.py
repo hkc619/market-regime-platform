@@ -1,12 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-import sys
 
-sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
-
-from core.logging import get_logger
-from repository.market_price_repository import get_latest_ticker_prices, get_latest_support_prices
-from repository.macro_repository import get_macro_daily, get_macro_monthly
+from app.core.logging import get_logger
+from app.repository.market_price_repository import get_latest_ticker_prices, get_latest_support_prices
+from app.repository.macro_repository import get_macro_daily, get_macro_monthly
 
 def get_latest_ticker_window(
         ticker,
