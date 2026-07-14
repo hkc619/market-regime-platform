@@ -3,8 +3,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 import sys
 
-sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
-from db.session import get_db
+from app.db.session import get_db
 
 
 router = APIRouter(tags=["Health"])

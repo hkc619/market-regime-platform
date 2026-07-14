@@ -14,6 +14,7 @@ from app.api.support import router as support_router
 from app.api.data import router as data_router
 from app.api.prediction_db import router as prediction_db_router
 from app.api.data_refresh import router as data_fresh_router
+from app.api.macro_refresh import router as macro_fresh_router
 
 ## logging
 setup_logging()
@@ -81,3 +82,4 @@ app.include_router(support_router, prefix="/api/v1")
 app.include_router(data_router, prefix="/api/v1")
 app.include_router(prediction_db_router, prefix="/api/v1")
 app.include_router(data_fresh_router, prefix="/api/v1")
+app.include_router(macro_fresh_router, prefix="/api/v1")

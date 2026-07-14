@@ -2,8 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import sys
 
-sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
-from core.config_env import settings
+from app.core.config_env import settings
 
 
 engine = create_engine(
