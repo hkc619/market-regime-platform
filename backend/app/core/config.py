@@ -71,6 +71,7 @@ class ModelInputBundle:
 
 class Settings(BaseSettings):
     database_url: str
+    fred_api_key: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

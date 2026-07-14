@@ -26,6 +26,7 @@ class FredClient:
         series_id: str,
         observation_start: date | str,
         observation_end: date | str | None = None,
+        units: str="lin",
     ) -> pd.DataFrame:
         params: dict[str, Any] = {
             "series_id": series_id,
@@ -33,6 +34,7 @@ class FredClient:
             "file_type": "json",
             "observation_start": str(observation_start),
             "sort_order": "asc",
+            "units": units,
         }
 
         if observation_end:
