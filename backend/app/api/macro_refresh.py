@@ -39,7 +39,7 @@ def refresh_macro_daily(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.post("/macro/monthly")
+@router.post("/macro/monthly", response_model=MacroRefreshResult)
 def refresh_macro_daily(
     request: Request,
     db: Session = Depends(get_db),

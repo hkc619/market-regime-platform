@@ -7,6 +7,7 @@ class MacroRefreshRequest(BaseModel):
 
 
 class MacroRefreshResult(BaseModel):
+    type_of_macro: str 
     latest_before: date | None
     latest_after: date | None
     rows_fetched: int

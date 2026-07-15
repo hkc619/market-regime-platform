@@ -153,12 +153,13 @@ class MacroDataService:
         )
 
         return {
+            "type_of_macro": "daily",
             "latest_before": latest_before,
             "latest_after": latest_after,
             "rows_fetched": len(wide_df),
             "rows_inserted_or_updated": affected_rows,
             "status": "success",
-            "message": "Market data refreshed successfully.",
+            "message": "Macro daily refreshed successfully.",
         }
     
     def refresh_monthly_macro(
@@ -166,12 +167,14 @@ class MacroDataService:
             db: Session, 
             request_id: str | None = None,
         ) -> dict:
-        latest_date = date(2025, 12, 31)
+        latest_before = self.get_latest_monthly_date(db)
 
-        if latest_date:
+        end_date = date.today()
+
+        if latest_before:
             # 重點：先轉回該月月初，再往前抓幾個月
             # 不要直接用 2025-12-31 往前，否則可能 miss 掉 2025-10-01 這種 FRED monthly observation
-            observation_start = latest_date.replace(day=1) - relativedelta(months=3)
+            observation_start = latest_before.replace(day=1) - relativedelta(months=3)
         else:
             observation_start = date(1990, 1, 1)
 
@@ -211,9 +214,41 @@ class MacroDataService:
         # print("rows:", len(monthly_df))
         # print("date range:", monthly_df["date"].min(), "to", monthly_df["date"].max())
 
-        upsert_macro_monthly(db, monthly_df)
+        affected_rows = upsert_macro_monthly(db, monthly_df)
 
-        return monthly_df
+        create_data_update_log(
+            db=db,
+            request_id=request_id,
+            data_type="macro_monthly",
+            source="FRED",
+            ticker="macro_monthly",
+            start_date=latest_before,
+            end_date=end_date,
+            status="success",
+            rows_fetched=len(monthly_df),
+            rows_inserted_or_updated=affected_rows,
+            error_message=None,
+        )
+
+        latest_after = self.get_latest_daily_date(db)
+
+        logger.info(
+        "Macro monthly refresh completed | request_id=%s | rows=%s | latest_before=%s | latest_after=%s",
+        request_id,
+        affected_rows,
+        latest_before,
+        latest_after,
+        )
+
+        return {
+            "type_of_macro": "monthly",
+            "latest_before": latest_before,
+            "latest_after": latest_after,
+            "rows_fetched": len(monthly_df),
+            "rows_inserted_or_updated": affected_rows,
+            "status": "success",
+            "message": "Macro monthly refreshed successfully.",
+        }
 
    
 
