@@ -5,9 +5,12 @@ import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.core.logging import get_logger
 from app.providers.fred_provider import FredClient
 from app.repository.macro_refresh_repository import get_latest_macro_daily, upsert_macro_daily, get_latest_macro_monthly, upsert_macro_monthly
+from app.repository.data_update_log_repository import create_data_update_log
 
+logger = get_logger(__name__)
 
 DAILY_MACRO_SERIES = {
     "VIX": {
@@ -56,16 +59,16 @@ class MacroDataService:
             request_id: str | None = None,
         ) -> dict:
 
-        latest_date = self.get_latest_daily_date(db)
-
-        latest_date = date(2025, 12, 31)
+        latest_before = self.get_latest_daily_date(db)
 
 
-        if latest_date:
+        if latest_before:
             # 多抓 1 天是為了處理假日、缺值、資料修正
-            observation_start = latest_date - timedelta(days=1)
+            observation_start = latest_before - timedelta(days=1)
         else:
             observation_start = date(1990, 1, 1)
+
+        end_date = date.today()
 
         all_frames: list[pd.DataFrame] = []
 
@@ -123,9 +126,40 @@ class MacroDataService:
         wide_df = wide_df.sort_values("date").reset_index(drop=True)
 
 
-        upsert_macro_daily(db, wide_df)
+        affected_rows = upsert_macro_daily(db, wide_df)
 
-        return wide_df
+        create_data_update_log(
+            db=db,
+            request_id=request_id,
+            data_type="macro_daily",
+            source="FRED",
+            ticker="macro_daily",
+            start_date=latest_before,
+            end_date=end_date,
+            status="success",
+            rows_fetched=len(wide_df),
+            rows_inserted_or_updated=affected_rows,
+            error_message=None,
+        )
+
+        latest_after = self.get_latest_daily_date(db)
+
+        logger.info(
+        "Macro daily refresh completed | request_id=%s | rows=%s | latest_before=%s | latest_after=%s",
+        request_id,
+        affected_rows,
+        latest_before,
+        latest_after,
+        )
+
+        return {
+            "latest_before": latest_before,
+            "latest_after": latest_after,
+            "rows_fetched": len(wide_df),
+            "rows_inserted_or_updated": affected_rows,
+            "status": "success",
+            "message": "Market data refreshed successfully.",
+        }
     
     def refresh_monthly_macro(
             self, 
