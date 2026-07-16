@@ -38,6 +38,42 @@ FRED_MACRO_M_SERIES = {
     },
 }
 
+def build_daily_macro_wide_df(long_df: pd.DataFrame) -> pd.DataFrame:
+    wide_df = (
+        long_df
+        .pivot_table(
+            index="date",
+            columns="feature_name",
+            values="value",
+            aggfunc="last",
+        )
+        .reset_index()
+        .rename(
+            columns={
+                "VIX": "vix",
+                "Yield10yr": "yield_10yr",
+                "Yield2yr": "yield_2yr",
+            }
+        )
+    )
+
+    wide_df["source"] = "FRED"
+
+    wide_df = wide_df[["date", "vix", "yield_10yr", "yield_2yr", "source"]]
+
+    wide_df = wide_df.sort_values("date").reset_index(drop=True)
+
+    return wide_df
+
+def normalize_monthly_date_to_month_end(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    df["date"] = pd.to_datetime(df["date"])
+    df["date"] = (df["date"] + pd.offsets.MonthEnd(0)).dt.date
+
+    return df
+
+
 class MacroDataService:
     def __init__(self, fred_client: FredClient):
         self.fred_client = fred_client
@@ -101,30 +137,7 @@ class MacroDataService:
         
         long_df = pd.concat(all_frames, ignore_index=True)
 
-        wide_df = (
-            long_df
-            .pivot_table(
-                index="date",
-                columns="feature_name",
-                values="value",
-                aggfunc="last",
-            )
-            .reset_index()
-            .rename(
-                columns={
-                    "VIX": "vix",
-                    "Yield10yr": "yield_10yr",
-                    "Yield2yr": "yield_2yr",
-                }
-            )
-        )
-
-        wide_df["source"] = "FRED"
-
-        wide_df = wide_df[["date", "vix", "yield_10yr", "yield_2yr", "source"]]
-
-        wide_df = wide_df.sort_values("date").reset_index(drop=True)
-
+        wide_df = build_daily_macro_wide_df
 
         affected_rows = upsert_macro_daily(db, wide_df)
 
@@ -190,8 +203,7 @@ class MacroDataService:
             if df.empty:
                 continue
 
-            df["date"] = pd.to_datetime(df["date"])
-            df["date"] = (df["date"] + pd.offsets.MonthEnd(0)).dt.date
+            
 
             df["feature_name"] = feature_name
             df["series_id"] = config["series_id"]
