@@ -88,7 +88,6 @@ class MacroDataService:
 
         return result
 
-
     def refresh_daily_macro(
             self, 
             db: Session, 
@@ -203,7 +202,7 @@ class MacroDataService:
             if df.empty:
                 continue
 
-            
+            df = normalize_monthly_date_to_month_end(df)
 
             df["feature_name"] = feature_name
             df["series_id"] = config["series_id"]
