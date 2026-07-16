@@ -99,29 +99,35 @@ def test_refresh_daily_macro_returns_wide_dataframe():
     service = MacroDataService(fred_client=FakeFredClient())
 
     result = service.refresh_daily_macro(db)
+    print(result)
 
-    assert list(result.columns) == ["date", "vix", "yr10", "yr2", "source"]
-    assert len(result) == 2
+    ''' "type_of_macro": "daily",
+            "latest_before": latest_before,
+            "latest_after": latest_after,
+            "rows_fetched": len(wide_df),
+            "rows_inserted_or_updated": affected_rows,
+            "status": "success",
+            "message": "Macro daily refreshed successfully.",'''
 
-    assert result.loc[0, "vix"] == 15.2
-    assert result.loc[0, "yr10"] == 4.12
-    assert result.loc[0, "yr2"] == 3.68
-    assert result.loc[0, "source"] == "FRED"
 
+    assert result["type_of_macro"] == "daily"
+
+## unfinished
 def test_refresh_daily_macro_calls_upsert_and_commit(mocker):
+
     db = MagicMock()
 
     service = MacroDataService(fred_client=FakeFredClient())
 
     mocker.patch.object(
         service,
-        "get_latest_daily_macro_date",
+        "get_latest_daily_date",
         return_value=date(2025, 12, 18),
     )
 
     mock_upsert = mocker.patch.object(
         service,
-        "upsert_daily_macro",
+        "upsert_macro_daily",
         return_value=1,
     )
 

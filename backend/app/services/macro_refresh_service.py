@@ -136,7 +136,7 @@ class MacroDataService:
         
         long_df = pd.concat(all_frames, ignore_index=True)
 
-        wide_df = build_daily_macro_wide_df
+        wide_df = build_daily_macro_wide_df(long_df)
 
         affected_rows = upsert_macro_daily(db, wide_df)
 
