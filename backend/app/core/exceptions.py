@@ -41,12 +41,15 @@ class ExternalDataFetchError(AppError):
     status_code = 502
     error_code = "EXTERNAL_DATA_FETCH_ERROR"
 
-
-class NoNewMarketDataError(AppError):
-    status_code = 200
-    error_code = "NO_NEW_MARKET_DATA"
-
-
 class InvalidExternalDataError(AppError):
     status_code = 502
     error_code = "INVALID_EXTERNAL_DATA"
+
+class NoNewMarketDataError(AppError):
+    """
+    Internal control-flow exception.
+
+    Usually should not be mapped to API error.
+    Refresh endpoint should return status='no_new_data' with HTTP 200.
+    """
+    pass
