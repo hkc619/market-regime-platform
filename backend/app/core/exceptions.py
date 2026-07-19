@@ -43,8 +43,10 @@ class ExternalDataFetchError(AppError):
 
 
 class NoNewMarketDataError(AppError):
-    pass
+    status_code = 200
+    error_code = "NO_NEW_MARKET_DATA"
 
 
 class InvalidExternalDataError(AppError):
-    pass
+    status_code = 502
+    error_code = "INVALID_EXTERNAL_DATA"

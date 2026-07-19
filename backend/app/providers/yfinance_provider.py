@@ -53,9 +53,15 @@ def fetch_market_data(
             warning_messages,
         )
 
-        raise NoNewMarketDataError(
-            f"No new market data found for {ticker} between {start_date} and {end_date}."
-        )
+        return {
+                "status": "no_new_data",
+                "ticker": ticker,
+                "latest_before": end_date,
+                "latest_after": end_date,
+                "rows_fetched": 0,
+                "rows_inserted_or_updated": 0,
+                "message": f"No new market data available for {ticker}.",
+            }
     
     return df
 
