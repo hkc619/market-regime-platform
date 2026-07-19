@@ -3,6 +3,7 @@ from fastapi import FastAPI
 
 from app.core.model_state import ModelState
 from app.core.logging import setup_logging, get_logger
+from app.core.exceptions import AppError
 
 from app.services.model_registry import load_cnn_gru_model
 from app.middlewares.request_logging import RequestLoggingMiddleware
@@ -15,6 +16,7 @@ from app.api.data import router as data_router
 from app.api.prediction_db import router as prediction_db_router
 from app.api.data_refresh import router as data_fresh_router
 from app.api.macro_refresh import router as macro_fresh_router
+from app.api.error_handler import router as app_error_handler
 
 ## logging
 setup_logging()
@@ -62,7 +64,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Market Regime Inference API",
-    version="0.1.1",
+    version="0.2.1",
     lifespan=lifespan # execute the lifespan when server activating
 )
 
