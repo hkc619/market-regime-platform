@@ -101,7 +101,7 @@ def train():
         print("=" * 70)
         results_nn = {}
         for mode in ["fusion"]:
-            model, acc, f1, preds, trues, history = train_model(
+            model, metrics, preds, trues, history = train_model(
                 train_ds, val_ds, test_ds, 
                 mode=mode, epochs=config.EPOCHS, patience=config.PATIENCE, 
                 lr=config.LR, device=config.DEVICE, batch_size=config.BATCH_SIZE, n_feat=n_feat, class_weights=class_weights
@@ -112,8 +112,6 @@ def train():
         
             }
         
-        raw_start_date = raw_data.ticker_prices.index.min().date()
-        raw_end_date = raw_data.ticker_prices.index.max().date()
 
         metadata_entry = build_model_metadata_entry(
             version="v3-db",
@@ -126,16 +124,9 @@ def train():
             raw_data_end_date=raw_data.target_prices.index.max().date(),
             training_rows=len(raw_data.target_prices),
             feature_rows=len(feature_df),
-            test_rows=len(y_test),
-            metrics={
-                "overall": {
-                    "accuracy": acc,
-                    "macro_f1": f1,
-                    "total_support": len(y_test),
-                    "classification_report": classification_report_dict,
-        }
-    },
-)
+            test_rows=len(trues),
+            metrics=metrics,
+        )
 
         append_model_metadata(
             metadata_path="models/metadata.json",

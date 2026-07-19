@@ -91,27 +91,60 @@ def train_model(train_ds, val_ds, test_ds, mode, epochs, patience, lr, device, b
     # ── Final evaluation on held-out TEST set (best weights, touched once) ───
     model.load_state_dict(best_weights)
     model.eval()
+
     all_preds, all_true = [], []
+
     with torch.no_grad():
         for xs, xm, yb, rb in test_dl:
+
             xs, xm = xs.to(device), xm.to(device)
             rb = rb.to(device)
+
             all_preds.extend(model(xs, xm, rb).argmax(1).cpu().numpy())
             all_true.extend(yb.numpy())
     
     config = DataConfig()
+
     PATH = config.output_path + f"{mode}_v2.pth"
     torch.save(model.state_dict(), PATH)
     print(f"\n  ── Model Saved: {mode}_v2.pth ──")
 
     acc = accuracy_score(all_true, all_preds)
-    f1  = f1_score(all_true, all_preds, average="macro", zero_division=0)
+    f1  = f1_score(
+        all_true, 
+        all_preds, 
+        average="macro", 
+        zero_division=0
+    )
+
+    report_text = classification_report(
+        all_true, 
+        all_preds,
+        target_names=[STATE_NAMES[i] for i in range(4)],
+        zero_division=0
+    )
+
+    report_dict = classification_report(
+    all_true,
+    all_preds,
+    target_names=[STATE_NAMES[i] for i in range(4)],
+    zero_division=0,
+    output_dict=True,
+)
+
     print(f"\n  ── Final TEST: {mode.upper()} ──")
     print(f"  Accuracy : {acc:.4f}   F1 Macro : {f1:.4f}")
-    print(classification_report(all_true, all_preds,
-                                target_names=[STATE_NAMES[i] for i in range(4)],
-                                zero_division=0))
-    return model, acc, f1, np.array(all_preds), np.array(all_true), history
+    print(report_text)
+
+    metrics = {
+    "overall": {
+        "accuracy": float(acc),
+        "macro_f1": float(f1),
+        "total_support": int(len(all_true)),
+        "classification_report": report_dict,
+    }
+}
+    return model, metrics, np.array(all_preds), np.array(all_true), history, PATH
 
 def test_model(model, device, test_dl):
     best_weights = ""
