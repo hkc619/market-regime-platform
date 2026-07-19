@@ -1,11 +1,7 @@
 import time
 
-from app.services.inference_db_service import prepare_latest_inference_input
-from app.services.features_input_service import build_latest_model_input
-from app.services.inference import predict_proba
 from app.core.logging import get_logger
 from app.core.model_config import RAW_LOOKBACK_DAYS, MODEL_VERSION
-from app.repository.prediction_repository import create_prediction_history
 from app.core.logging import get_logger
 from app.core.exceptions import (
     InsufficientFeatureDataError,
@@ -14,6 +10,9 @@ from app.core.exceptions import (
     PredictionSaveError,
     TickerNotFoundError,
 )
+
+from app.repository.prediction_repository import create_prediction_history
+
 logger = get_logger(__name__)
 
 def create_latest_prediction(
@@ -23,6 +22,10 @@ def create_latest_prediction(
         request_id,
 ) -> dict:
     
+    from app.services.inference_db_service import prepare_latest_inference_input
+    from app.services.inference import predict_proba
+    from app.services.features_input_service import build_latest_model_input
+
     start_time = time.perf_counter()
     ticker = ticker.upper().strip()
 

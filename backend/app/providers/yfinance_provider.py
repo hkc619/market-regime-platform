@@ -1,6 +1,6 @@
 import warnings
 import pandas as pd
-import yfinance as yf
+
 
 from app.core.exceptions import ExternalDataFetchError, NoNewMarketDataError
 from app.core.logging import get_logger
@@ -12,6 +12,8 @@ def fetch_market_data(
     start_date,
     end_date,
 ) -> pd.DataFrame:
+    
+    import yfinance as yf
     try:
         with warnings.catch_warnings(record=True) as caught_warnings:
             warnings.simplefilter("always")

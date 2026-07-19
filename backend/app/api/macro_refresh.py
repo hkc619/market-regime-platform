@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
+from fastapi import APIRouter, Depends, HTTPException, Request
+
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+
 from app.services.macro_refresh_service import MacroDataService
 from app.schemas.macro_refresh import  MacroRefreshResult
 from app.providers.fred_provider import FredClient
@@ -63,3 +65,4 @@ def refresh_macro_daily(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    

@@ -3,7 +3,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.services.prediction_service import create_latest_prediction
+
 from app.repository.prediction_repository import get_latest_prediction_by_ticker
+
 from app.core.exceptions import (
     InsufficientFeatureDataError,
     InsufficientRawDataError,
@@ -12,6 +14,7 @@ from app.core.exceptions import (
     TickerNotFoundError,
 )
 from app.core.logging import get_logger
+
 from app.db.session import get_db
 
 from app.schemas.prediction import (
