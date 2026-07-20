@@ -24,16 +24,16 @@ def refresh_macro_daily(
     request_id = request.state.request_id
 
     try:
-        
         return service.refresh_daily_macro(
             db=db,
             request_id=request_id,
         )
-    except ExternalDataFetchError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    
+    except Exception as e:
+        raise ExternalDataFetchError(f"Unexpected macro refresh error: {str(e)}")
 
-    except InvalidExternalDataError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise InvalidExternalDataError(f"Unexpected macro refresh error: {str(e)}")
     
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
@@ -54,11 +54,11 @@ def refresh_macro_daily(
             db=db,
             request_id=request_id,
         )
-    except ExternalDataFetchError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise ExternalDataFetchError(f"Unexpected macro refresh error: {str(e)}")
 
-    except InvalidExternalDataError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise InvalidExternalDataError(f"Unexpected macro refresh error: {str(e)}")
     
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

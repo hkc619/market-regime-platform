@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from datetime import date, datetime
 
 
-class PredictRequest(BaseModel):
+class LatestPredictionRequest(BaseModel):
     ticker: str = Field(..., example="SPY")
 
 
@@ -53,7 +53,7 @@ class BatchPredictResponse(BaseModel):
     results: List[BatchPredictionItem]
     summary: BatchPredictSummary
 
-class LatestPredictionRequest(BaseModel):
+class (BaseModel):
     ticker: str = Field(..., min_length=1, examples=["SPY"])
 
 

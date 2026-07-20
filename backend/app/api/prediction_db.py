@@ -7,6 +7,7 @@ from app.services.prediction_service import create_latest_prediction
 from app.repository.prediction_repository import get_latest_prediction_by_ticker
 
 from app.core.exceptions import (
+    AppError,
     InsufficientFeatureDataError,
     InsufficientRawDataError,
     ModelInferenceError,
@@ -25,13 +26,10 @@ from app.schemas.prediction import (
 logger = get_logger("prediction_db")
 
 router = APIRouter(prefix="/predictions", tags=["Prediction_db"])
-
-class PredictRequest(BaseModel):
-    ticker: str
     
 @router.post("/latest", response_model=LatestPredictionResponse)
 def predict(
-        request_body: PredictRequest, 
+        request_body: LatestPredictionRequest, 
         request: Request,
         db: Session = Depends(get_db)
     ):
@@ -94,19 +92,26 @@ def predict(
             },
         ) 
         
+    except AppError:
+        raise
+
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    except TickerNotFoundError as e:
-        raise HTTPException(status_code=404, detail=e.message)
+    
+    except Exception as e:
+        raise TickerNotFoundError(f"Unexpected prediction error: {str(e)}")
 
-    except (InsufficientRawDataError, InsufficientFeatureDataError) as e:
-        raise HTTPException(status_code=422, detail=e.message)
+    except Exception as e:
+        raise InsufficientRawDataError(f"Unexpected prediction error: {str(e)}")
+    
+    except Exception as e:
+        raise InsufficientFeatureDataError(f"Unexpected prediction error: {str(e)}")
 
-    except ModelInferenceError as e:
-        raise HTTPException(status_code=500, detail=f"Model inference failed: {e.message}")
+    except Exception as e:
+        raise ModelInferenceError(f"Model inference failed: {str(e)}")
 
-    except PredictionSaveError as e:
-        raise HTTPException(status_code=500, detail=f"Prediction save failed: {e.message}")
+    except Exception as e:
+        raise PredictionSaveError(f"Prediction save failed: {str(e)}")
     
     
 
