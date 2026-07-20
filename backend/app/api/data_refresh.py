@@ -25,11 +25,11 @@ def refresh_market(
             ticker=payload.ticker,
             request_id=request_id,
         )
-    except ExternalDataFetchError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise ExternalDataFetchError(f"Unexpected refresh error: {str(e)}")
 
-    except InvalidExternalDataError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise InvalidExternalDataError(f"Unexpected refresh error: {str(e)}")
     
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
