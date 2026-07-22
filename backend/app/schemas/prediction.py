@@ -1,11 +1,9 @@
-# backend/app/schemas/prediction.py
-
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
 from datetime import date, datetime
 
 
-class LatestPredictionRequest(BaseModel):
+class PredictionRequest(BaseModel):
     ticker: str = Field(..., example="SPY")
 
 
@@ -53,7 +51,7 @@ class BatchPredictResponse(BaseModel):
     results: List[BatchPredictionItem]
     summary: BatchPredictSummary
 
-class (BaseModel):
+class LatestPredictionRequest(BaseModel):
     ticker: str = Field(..., min_length=1, examples=["SPY"])
 
 

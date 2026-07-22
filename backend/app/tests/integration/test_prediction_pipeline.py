@@ -1,4 +1,7 @@
 import math
+import pytest
+
+pytestmark = pytest.mark.slow
 
 def test_post_latest_prediction_success(client):
     payload = {

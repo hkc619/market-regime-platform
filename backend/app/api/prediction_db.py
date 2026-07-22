@@ -160,8 +160,12 @@ def get_latest_predict(
     }
 
 
-        
-    
+# def get_create_latest_prediction_fn() -> callable:
+#     return create_latest_prediction
+
+# def get_get_latest_prediction_by_ticker_fn() -> callable:
+#     return get_latest_prediction_by_ticker
+
 
 
 

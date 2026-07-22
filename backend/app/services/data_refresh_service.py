@@ -1,14 +1,16 @@
 
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
+import pandas as pd
 
-from app.db.session import get_db
 from app.repository.data_refresh_repository import get_latest_ohlcv, upsert_market_prices
 from app.repository.data_update_log_repository import create_data_update_log
-from app.providers.yfinance_provider import fetch_market_data
+
 from app.providers.market_data_normalizer import normalize_market_data
 from app.core.logging import get_logger
-from app.core.exceptions import NoNewMarketDataError
+from app.core.exceptions import NoNewMarketDataError, InvalidExternalDataError
+
+import app.providers.yfinance_provider as YFinanceProvider
 
 logger = get_logger(__name__)
 
@@ -41,6 +43,7 @@ def refresh_market_data(
         ticker: str, 
         db:Session,
         request_id: str | None = None,
+        provider=None,
     ) -> dict:
 
     ticker = ticker.upper().strip()
@@ -80,8 +83,10 @@ def refresh_market_data(
             "status": "up_to_date",
         }
     
+    provider = provider or YFinanceProvider()
+    
     try:
-        raw_df = fetch_market_data(
+        raw_df = provider.fetch_market_data(
             ticker=ticker, 
             start_date=start_date, 
             end_date=end_date
@@ -186,4 +191,48 @@ def refresh_market_data(
         "message": "Market data refreshed successfully.",
     }
     
+REQUIRED_MARKET_COLUMNS = [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+]
 
+def validate_market_data_df(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return df
+
+    missing_columns = [
+        col for col in REQUIRED_MARKET_COLUMNS if col not in df.columns
+    ]
+
+    if missing_columns:
+        raise InvalidExternalDataError(
+            f"Market data is missing required columns: {missing_columns}"
+        )
+
+    df = df.copy()
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+
+    if df["date"].isna().any():
+        raise InvalidExternalDataError(
+            "Market data contains invalid date values."
+        )
+
+    price_columns = ["open", "high", "low", "close"]
+
+    for col in price_columns:
+        if (df[col] <= 0).any():
+            raise InvalidExternalDataError(
+                f"Market data contains non-positive values in column: {col}"
+            )
+
+    if (df["volume"] < 0).any():
+        raise InvalidExternalDataError(
+            "Market data contains negative volume values."
+        )
+
+    return df
