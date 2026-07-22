@@ -1,6 +1,6 @@
 import warnings
 import pandas as pd
-import yfinance as yf
+
 
 from app.core.exceptions import ExternalDataFetchError, NoNewMarketDataError
 from app.core.logging import get_logger
@@ -12,6 +12,8 @@ def fetch_market_data(
     start_date,
     end_date,
 ) -> pd.DataFrame:
+    
+    import yfinance as yf
     try:
         with warnings.catch_warnings(record=True) as caught_warnings:
             warnings.simplefilter("always")
@@ -53,9 +55,15 @@ def fetch_market_data(
             warning_messages,
         )
 
-        raise NoNewMarketDataError(
-            f"No new market data found for {ticker} between {start_date} and {end_date}."
-        )
+        return {
+                "status": "no_new_data",
+                "ticker": ticker,
+                "latest_before": end_date,
+                "latest_after": end_date,
+                "rows_fetched": 0,
+                "rows_inserted_or_updated": 0,
+                "message": f"No new market data available for {ticker}.",
+            }
     
     return df
 

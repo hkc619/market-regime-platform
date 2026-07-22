@@ -7,7 +7,7 @@ def test_get_spy_market_data_status(client):
 
     assert data["ticker"] == "SPY"
     assert data["available_days"] >= 252
-    assert data["required_days"] == 252
+    assert data["required_days"] == 312
     assert data["is_ready_for_prediction"] is True
     assert data["start_date"] is not None
     assert data["end_date"] is not None

@@ -1,11 +1,12 @@
 import numpy as np
-import torch
+
 import pickle
 
 from app.core.logging import get_logger
 logger = get_logger("inference_service")
 
 def predict_proba(bundle, device, model, scaler):
+    import torch
     
     logger.info("Building inference sequence | ticker=%s", bundle.ticker)
 

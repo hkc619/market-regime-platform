@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
+from fastapi import APIRouter, Depends, HTTPException, Request
+
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+
 from app.services.macro_refresh_service import MacroDataService
 from app.schemas.macro_refresh import  MacroRefreshResult
 from app.providers.fred_provider import FredClient
@@ -22,16 +24,16 @@ def refresh_macro_daily(
     request_id = request.state.request_id
 
     try:
-        
         return service.refresh_daily_macro(
             db=db,
             request_id=request_id,
         )
-    except ExternalDataFetchError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    
+    except Exception as e:
+        raise ExternalDataFetchError(f"Unexpected macro refresh error: {str(e)}")
 
-    except InvalidExternalDataError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise InvalidExternalDataError(f"Unexpected macro refresh error: {str(e)}")
     
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
@@ -52,14 +54,15 @@ def refresh_macro_daily(
             db=db,
             request_id=request_id,
         )
-    except ExternalDataFetchError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise ExternalDataFetchError(f"Unexpected macro refresh error: {str(e)}")
 
-    except InvalidExternalDataError as e:
-        raise HTTPException(status_code=502, detail=e.message)
+    except Exception as e:
+        raise InvalidExternalDataError(f"Unexpected macro refresh error: {str(e)}")
     
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    

@@ -2,7 +2,7 @@ import sys
 import json
 from pathlib import Path
 from typing import Any
-import torch
+
 
 sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
 from ml.model import DualCNNGRUFusion
@@ -43,6 +43,8 @@ def get_model_metadata(version: str) -> dict[str, Any]:
     raise ModelLoadError(f"Model version not found: {version}")
 
 def load_cnn_gru_model(version: str, device: str = "cpu"):
+    import torch
+    
     logger.info("Loading CNN-GRU model | version=%s | device=%s", version, device)
     
     model_info = get_model_metadata(version)

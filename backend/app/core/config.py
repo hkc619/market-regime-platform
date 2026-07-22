@@ -28,6 +28,14 @@ class TrainingConfig:
     PATIENCE: int   = 10
     SEED: int = 42
 
+@dataclass
+class RawTrainingData:
+    ticker_prices: pd.DataFrame
+    sup1_close: pd.Series
+    sup2_close: pd.Series
+    macro_daily: pd.DataFrame
+    macro_monthly: pd.DataFrame
+
 ## new inference dataclass for db 
 @dataclass
 class RawInferenceSeries:

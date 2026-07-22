@@ -31,8 +31,8 @@ def get_market_data_status(
             "end_date": row["end_date"],
         }
     
-    except TickerNotFoundError as e:
-        raise HTTPException(status_code=404, detail=e.message)
+    except Exception as e:
+        raise TickerNotFoundError(f"Unexpected data error: {str(e)}")
 
 
 
@@ -51,8 +51,8 @@ def get_macro_daily_status(db: Session = Depends(get_db)):
             "yield_10yr_count": row["yield_10yr_count"],
             "yield_2yr_count": row["yield_2yr_count"],
         }
-    except MacroNotFoundError as e:
-        raise HTTPException(status_code=404, detail=e.message)
+    except Exception as e:
+        raise MacroNotFoundError(f"Unexpected data error: {str(e)}")
 
 
 @router.get("/window")
@@ -74,6 +74,6 @@ def get_prediction_window(
             "start_date": row["start_date"],
             "end_date": row["end_date"],
         }
-    except InsufficientRawDataError as e:
-        raise HTTPException(status_code=422, detail=e.message)
+    except Exception as e:
+        raise InsufficientRawDataError(f"Unexpected data error: {str(e)}")
     

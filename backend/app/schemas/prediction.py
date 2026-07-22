@@ -1,11 +1,9 @@
-# backend/app/schemas/prediction.py
-
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
 from datetime import date, datetime
 
 
-class PredictRequest(BaseModel):
+class PredictionRequest(BaseModel):
     ticker: str = Field(..., example="SPY")
 
 

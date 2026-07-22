@@ -6,7 +6,7 @@ def test_model_info_returns_metadata(client):
     if response.status_code == 200:
         data = response.json()
 
-        assert data["version"] == "v1"
+        assert data["version"] == "v2"
         assert data["model_name"] == "CNN-GRU Fusion"
         assert data["task"] == "Market Regime Classification"
         assert data["num_classes"] == 4
