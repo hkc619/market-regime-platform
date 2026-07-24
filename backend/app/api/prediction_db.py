@@ -2,9 +2,9 @@ from fastapi import APIRouter, Request, HTTPException, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.services.prediction_service import create_latest_prediction
+from app.services.prediction_service import create_latest_prediction, get_prediction_history
 
-from app.repository.prediction_repository import get_latest_prediction_by_ticker
+from app.repositories.prediction_repository import get_latest_prediction_by_ticker
 
 from app.core.exceptions import (
     AppError,
@@ -21,6 +21,7 @@ from app.db.session import get_db
 from app.schemas.prediction import (
     LatestPredictionRequest,
     LatestPredictionResponse,
+    PredictionHistoryResponse,
 )
 
 logger = get_logger("prediction_db")
@@ -125,7 +126,8 @@ def get_latest_predict(
 
     result = get_latest_prediction_by_ticker(
         db=db, 
-        ticker=ticker
+        ticker=ticker,
+        limit=1
     )
     
     if result is None:
@@ -134,31 +136,39 @@ def get_latest_predict(
             detail=f"No prediction history found for ticker={ticker.upper()}",
         )
 
-    return {
-        "prediction_id": result["id"],
-        "ticker": result["ticker"],
-        "as_of_date": result["as_of_date"],
-        "predicted_class": result["predicted_class"],
-        "predicted_regime": result["predicted_regime"],
-        "confidence": float(result["confidence"]),
-        "probabilities": {
-            "Trending-Down": float(result["prob_trending_down"]),
-            "Transition-Down": float(result["prob_transition_down"]),
-            "Transition-Up": float(result["prob_transition_up"]),
-            "Trending-Up": float(result["prob_trending_up"]),
-        },
-        "model_version": result["model_version"],
-        "input_window": {
-            "raw_window_rows": result["raw_window_rows"],
-            "feature_rows": result["feature_rows"],
-            "model_input_rows": result["model_input_rows"],
-            "feature_dim": result["feature_dim"],
-            "input_start_date": result["input_start_date"],
-            "input_end_date": result["input_end_date"],
-        },
-        "created_at": result["created_at"],
-    }
+    try : 
+        return {
+            "prediction_id": result["id"],
+            "ticker": result["ticker"],
+            "as_of_date": result["as_of_date"],
+            "predicted_class": result["predicted_class"],
+            "predicted_regime": result["predicted_regime"],
+            "confidence": float(result["confidence"]),
+            "probabilities": {
+                "Trending-Down": float(result["prob_trending_down"]),
+                "Transition-Down": float(result["prob_transition_down"]),
+                "Transition-Up": float(result["prob_transition_up"]),
+                "Trending-Up": float(result["prob_trending_up"]),
+            },
+            "model_version": result["model_version"],
+            "input_window": {
+                "raw_window_rows": result["raw_window_rows"],
+                "feature_rows": result["feature_rows"],
+                "model_input_rows": result["model_input_rows"],
+                "feature_dim": result["feature_dim"],
+                "input_start_date": result["input_start_date"],
+                "input_end_date": result["input_end_date"],
+            },
+            "created_at": result["created_at"],
+        }
+    
+    except AppError:
+        raise
 
+    except Exception as e:
+        raise ModelInferenceError(
+            f"Unexpected prediction history error: {str(e)}"
+        )
 
 # def get_create_latest_prediction_fn() -> callable:
 #     return create_latest_prediction
@@ -167,5 +177,24 @@ def get_latest_predict(
 #     return get_latest_prediction_by_ticker
 
 
+@router.get("/history", response_model=PredictionHistoryResponse)
+def get_prediction_history(
+    ticker: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=2, le=100),
+    db: Session = Depends(get_db),
+):
+    try:
+        return get_prediction_history(
+            db=db,
+            ticker=ticker,
+            limit=limit,
+        )
 
+    except AppError:
+        raise
+
+    except Exception as e:
+        raise ModelInferenceError(
+            f"Unexpected prediction history error: {str(e)}"
+        )
 

@@ -1,4 +1,6 @@
 import time
+from decimal import Decimal
+from typing import Any
 
 from app.core.logging import get_logger
 from app.core.model_config import RAW_LOOKBACK_DAYS, MODEL_VERSION
@@ -11,7 +13,8 @@ from app.core.exceptions import (
     TickerNotFoundError,
 )
 
-from app.repository.prediction_repository import create_prediction_history
+from app.repositories.prediction_repository import create_prediction_history, get_prediction_history_by_ticker
+from app.schemas.prediction import PredictionHistoryResponse
 
 logger = get_logger(__name__)
 
@@ -129,6 +132,7 @@ def create_latest_prediction(
             latency_ms,
         )
 
+
         return {
                 "prediction_id": saved["id"],
                 "ticker": saved["ticker"],
@@ -159,5 +163,61 @@ def create_latest_prediction(
             request_id,
             ticker,
         )
-        raise 
+        raise
+
+def _to_float(value: Any) -> float:
+    if isinstance(value, Decimal):
+        return float(value)
+
+    if value is None:
+        return 0.0
+
+    return float(value)
+
+
+def _build_probabilities(row: dict) -> dict[str, float]:
+    return {
+        "Trending-Down": _to_float(row.get("prob_trending_down")),
+        "Transition-Down": _to_float(row.get("prob_transition_down")),
+        "Transition-Up": _to_float(row.get("prob_transition_up")),
+        "Trending-Up": _to_float(row.get("prob_trending_up")),
+    }
+
+
+def _map_prediction_history_row(row: dict) -> dict:
+    return {
+        "prediction_id": row["prediction_id"],
+        "ticker": row["ticker"],
+        "as_of_date": row["as_of_date"],
+        "predicted_class": row["predicted_class"],
+        "predicted_regime": row["predicted_regime"],
+        "confidence": _to_float(row["confidence"]),
+        "probabilities": _build_probabilities(row),
+        "model_version": row.get("model_version"),
+        "created_at": row.get("created_at"),
+    }
+
+def get_prediction_history(
+    db,
+    ticker,
+    limit=20,
+) -> PredictionHistoryResponse:
+    normalized_ticker = ticker.upper()
+
+    rows = get_prediction_history_by_ticker(
+        db=db,
+        ticker=normalized_ticker,
+        limit=limit,
+    )
+
+    items = [
+        _map_prediction_history_row(dict(row))
+        for row in rows
+    ]
+
+    return PredictionHistoryResponse(
+        ticker=normalized_ticker,
+        count=len(items),
+        results=items,
+    )
 

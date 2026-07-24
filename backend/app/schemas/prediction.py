@@ -80,3 +80,23 @@ class LatestPredictionResponse(BaseModel):
     input_window: PredictionInputWindow
 
     created_at: datetime
+
+class PredictionHistoryItem(BaseModel):
+    prediction_id: int
+    ticker: str
+    as_of_date: date
+
+    predicted_class: int
+    predicted_regime: str
+    confidence: float = Field(..., ge=0, le=1)
+
+    probabilities: dict[str, float]
+
+    model_version: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
+class PredictionHistoryResponse(BaseModel):
+    ticker: str
+    count: int
+    results: list[PredictionHistoryItem]

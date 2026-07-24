@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import MacroNotFoundError, InsufficientRawDataError, TickerNotFoundError
 from app.db.session import get_db
-from app.repository.data_repository import get_market_data, get_macro_daily, get_window
+from app.repositories.data_repository import get_market_data, get_macro_daily, get_window
 
 
 router = APIRouter(prefix="/data", tags=["data"])
