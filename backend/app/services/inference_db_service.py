@@ -2,13 +2,27 @@ from app.services.data_service import get_latest_ticker_window, get_latest_suppo
 from app.services.inference_input_service import market_rows_to_dataframe, macro_rows_to_dataframe
 from app.core.config import RawInferenceSeries
 
-def prepare_latest_inference_input(db, ticker: str, sup0: str, sup1: str, lookback: int = 312):
-    
-    ticker_rows = get_latest_ticker_window(
-    db=db,
-    ticker=ticker,
-    lookback=lookback,
-    )
+def prepare_inference_input(
+        db, 
+        ticker: str,
+        latest: bool, 
+        sup0: str, 
+        sup1: str, 
+        lookback: int = 312
+    ):
+    if latest:
+        ticker_rows = get_latest_ticker_window(
+        db=db,
+        ticker=ticker,
+        lookback=lookback,
+        )
+    else:
+        ticker_rows = get_latest_ticker_window(
+        db=db,
+        ticker=ticker,
+        lookback=lookback,
+        )
+
     # 1. primary ticker OHLCV
     ticker_df = market_rows_to_dataframe(ticker_rows)
     ticker_close = ticker_df["close"]

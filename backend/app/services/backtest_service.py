@@ -22,7 +22,7 @@ def predict_for_date(
     are not written into the production prediction history table.
     """
     
-    from app.services.inference_db_service import prepare_latest_inference_input
+    from app.services.inference_db_service import prepare_inference_input
     from app.services.inference import predict_proba
     from app.services.features_input_service import build_latest_model_input
 
@@ -39,9 +39,10 @@ def predict_for_date(
     metadata = model_state.metadata
     device = model_state.device
     try: 
-        raw = prepare_latest_inference_input(
+        raw = prepare_inference_input(
             db=db, 
-            ticker=ticker, sup0="QQQ", sup1="TLT", 
+            ticker=ticker, sup0="QQQ", sup1="TLT",
+            latest=False, 
             lookback=312
         )
 
