@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
+from datetime import date
 
 from app.core.logging import get_logger
-from app.repositories.market_price_repository import get_latest_ticker_prices, get_latest_support_prices
+from app.repositories.market_price_repository import (
+    get_latest_ticker_prices, 
+    get_latest_support_prices,
+    get_ticker_window_ending_at
+    )
 from app.repositories.macro_repository import get_macro_daily, get_macro_monthly
 
 def get_latest_ticker_window(
@@ -49,6 +54,23 @@ def get_macro_monthly_window(db: Session):
     rows = get_macro_monthly(db=db)          
 
     return rows
+
+def get_ticker_window_for_date(
+        ticker,
+        db: Session,
+        as_of_date: date,
+        lookback: int = 312, 
+):
+    ticker = ticker.upper().strip()
+
+    rows = get_ticker_window_ending_at(
+        db=db,
+        ticker=ticker,
+        as_of_date=as_of_date,
+        lookback=lookback,
+    )
+
+    return list(reversed(rows))
 
 
 # if __name__ == "__main__":
