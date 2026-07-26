@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import Any
 from datetime import date
 
+from app.db.session import get_db
 from app.core.logging import get_logger
 from app.core.model_config import RAW_LOOKBACK_DAYS, MODEL_VERSION
 from app.core.exceptions import (
@@ -20,7 +21,7 @@ def predict_for_date(
         as_of_date: date,
         model_state,
         request_id,
-) -> dict:
+) :
     """
     Run model inference using data available up to as_of_date.
 
@@ -56,7 +57,6 @@ def predict_for_date(
         )
 
         raw_rows = len(raw.ticker_close)
-
         logger.info("Raw inference loaded | request_id=%s | ticker=%s | raw_rows=%d ",
             request_id,
             ticker,
@@ -103,6 +103,19 @@ def predict_for_date(
             prediction["predicted_regime"],
             prediction["confidence"],
         )
+        
+        return {
+            "ticker":ticker,
+            "as_of_date":model_input.end_date,
+            "predicted_class":int(prediction["predicted_class"]),
+            "predicted_regime":prediction["predicted_regime"],
+            "confidence":float(prediction["confidence"]),
+            "raw_window_rows": len(raw.ticker_close),
+            "model_input_rows":model_input.latest_60_feat.shape[0],
+            "feature_dim":model_input.feature_dim,
+            "input_start_date":model_input.start_date,
+            "input_end_date":model_input.end_date,
+        }
 
         # try:
             
@@ -156,4 +169,16 @@ def predict_for_date(
             ticker,
         )
         raise
-predict_for_date()
+
+# if __name__ == "__main__":
+#     db = next(get_db())
+#     try:
+#         rows = predict_for_date(
+#             db=db,
+#             ticker="SPY",
+#             as_of_date=date(2025, 12, 1),
+#             model_state=
+#         )
+#         print(rows)
+#     finally:
+#         db.close()

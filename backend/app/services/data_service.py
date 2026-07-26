@@ -1,8 +1,6 @@
 from sqlalchemy.orm import Session
 from datetime import date
 
-from app.db.session import get_db
-from app.core.logging import get_logger
 from app.repositories.market_price_repository import (
     get_latest_ticker_prices, 
     get_latest_support_prices,
