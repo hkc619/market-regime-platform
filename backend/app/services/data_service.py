@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import date
 
+from app.db.session import get_db
 from app.core.logging import get_logger
 from app.repositories.market_price_repository import (
     get_latest_ticker_prices, 
@@ -76,15 +77,14 @@ def get_ticker_window_for_date(
 # if __name__ == "__main__":
 #     db = next(get_db())
 #     try:
-#         rows = get_latest_support_window(
+#         rows = get_ticker_window_for_date(
 #             db=db,
-#             support="TLT",
-#             start_date='2024-12-30',
-#             end_date='2025-12-31'
+#             ticker="SPY",
+#             as_of_date=date(2025, 12, 1)
 #         )
-
+#         print(rows[0])
 #         print(len(rows))
-#         print(rows[:3])
+#         print(rows[-1])
 
 #     finally:
 #         db.close()

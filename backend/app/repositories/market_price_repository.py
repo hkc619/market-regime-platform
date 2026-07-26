@@ -82,7 +82,7 @@ def get_ticker_window_ending_at(
         adjusted_close,
         volume
     FROM market_prices
-    WHERE ticker = :ticker AND date: as_of_date
+    WHERE ticker = :ticker AND date <= :as_of_date
     ORDER BY date DESC
     LIMIT :lookback;
     """)

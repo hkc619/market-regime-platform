@@ -1,4 +1,11 @@
-from app.services.data_service import get_latest_ticker_window, get_latest_support_window, get_macro_daily_window, get_macro_monthly_window
+from datetime import date
+from app.services.data_service import (
+    get_latest_ticker_window, 
+    get_latest_support_window, 
+    get_macro_daily_window, 
+    get_macro_monthly_window, 
+    get_ticker_window_for_date
+    )
 from app.services.inference_input_service import market_rows_to_dataframe, macro_rows_to_dataframe
 from app.core.config import RawInferenceSeries
 
@@ -6,6 +13,7 @@ def prepare_inference_input(
         db, 
         ticker: str,
         latest: bool, 
+        as_of_date: date,
         sup0: str, 
         sup1: str, 
         lookback: int = 312
@@ -17,9 +25,10 @@ def prepare_inference_input(
         lookback=lookback,
         )
     else:
-        ticker_rows = get_latest_ticker_window(
+        ticker_rows = get_ticker_window_for_date(
         db=db,
         ticker=ticker,
+        as_of_date=as_of_date,
         lookback=lookback,
         )
 

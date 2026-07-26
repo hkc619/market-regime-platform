@@ -5,6 +5,12 @@ from datetime import date
 
 from app.core.logging import get_logger
 from app.core.model_config import RAW_LOOKBACK_DAYS, MODEL_VERSION
+from app.core.exceptions import (
+    InsufficientFeatureDataError,
+    InsufficientRawDataError,
+    ModelInferenceError,
+    TickerNotFoundError,
+)
 
 logger = get_logger(__name__)
 
@@ -41,7 +47,10 @@ def predict_for_date(
     try: 
         raw = prepare_inference_input(
             db=db, 
-            ticker=ticker, sup0="QQQ", sup1="TLT",
+            ticker=ticker, 
+            sup0="QQQ", 
+            sup1="TLT",
+            as_of_date=as_of_date,
             latest=False, 
             lookback=312
         )
@@ -61,7 +70,7 @@ def predict_for_date(
                 f"{ticker} only has {raw_rows} raw rows. "
                 f"Need at least {RAW_LOOKBACK_DAYS}"
             )
-
+        
         model_input = build_latest_model_input(raw)
 
         logger.info(
@@ -95,66 +104,51 @@ def predict_for_date(
             prediction["confidence"],
         )
 
-        try:
-            saved = create_prediction_history(
-                db=db,
-                ticker=ticker,
-                as_of_date=model_input.end_date,
-                predicted_class=prediction["predicted_class"],
-                predicted_regime=prediction["predicted_regime"],
-                confidence=prediction["confidence"],
-                probabilities=prediction["probabilities"],
-                model_version=MODEL_VERSION,
-                raw_window_rows=len(raw.ticker_close),
-                feature_rows=model_input.feature_rows,
-                model_input_rows=model_input.latest_60_feat.shape[0],
-                feature_dim=model_input.feature_dim,
-                input_start_date=model_input.start_date,
-                input_end_date=model_input.end_date,
-        )
-        except Exception as e:
-            logger.exception(
-                "Prediction save failed | request_id=%s | ticker=%s",
-                request_id,
-                ticker,
-            )
-            raise PredictionSaveError(str(e)) from e
+        # try:
+            
+        # except Exception as e:
+        #     logger.exception(
+        #         "Prediction save failed | request_id=%s | ticker=%s",
+        #         request_id,
+        #         ticker,
+        #     )
+        #     raise PredictionSaveError(str(e)) from e
         
         latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
-        logger.info(
-            "Prediction request finished | request_id=%s | ticker=%s | prediction_id=%s | latency_ms=%s",
-            request_id,
-            ticker,
-            saved["id"],
-            latency_ms,
-        )
+        # logger.info(
+        #     "Prediction request finished | request_id=%s | ticker=%s | prediction_id=%s | latency_ms=%s",
+        #     request_id,
+        #     ticker,
+        #     saved["id"],
+        #     latency_ms,
+        # )
 
 
-        return {
-                "prediction_id": saved["id"],
-                "ticker": saved["ticker"],
-                "as_of_date": saved["as_of_date"],
-                "predicted_class": saved["predicted_class"],
-                "predicted_regime": saved["predicted_regime"],
-                "confidence": float(saved["confidence"]),
-                "probabilities": {
-                    "Trending-Down": float(saved["prob_trending_down"]),
-                    "Transition-Down": float(saved["prob_transition_down"]),
-                    "Transition-Up": float(saved["prob_transition_up"]),
-                    "Trending-Up": float(saved["prob_trending_up"]),
-                },
-                "model_version": saved["model_version"],
-                "input_window": {
-                    "raw_window_rows": saved["raw_window_rows"],
-                    "feature_rows": saved["feature_rows"],
-                    "model_input_rows": saved["model_input_rows"],
-                    "feature_dim": saved["feature_dim"],
-                    "input_start_date": saved["input_start_date"],
-                    "input_end_date": saved["input_end_date"],
-                },
-                "created_at": saved["created_at"],
-            }
+        # return {
+        #         "prediction_id": saved["id"],
+        #         "ticker": saved["ticker"],
+        #         "as_of_date": saved["as_of_date"],
+        #         "predicted_class": saved["predicted_class"],
+        #         "predicted_regime": saved["predicted_regime"],
+        #         "confidence": float(saved["confidence"]),
+        #         "probabilities": {
+        #             "Trending-Down": float(saved["prob_trending_down"]),
+        #             "Transition-Down": float(saved["prob_transition_down"]),
+        #             "Transition-Up": float(saved["prob_transition_up"]),
+        #             "Trending-Up": float(saved["prob_trending_up"]),
+        #         },
+        #         "model_version": saved["model_version"],
+        #         "input_window": {
+        #             "raw_window_rows": saved["raw_window_rows"],
+        #             "feature_rows": saved["feature_rows"],
+        #             "model_input_rows": saved["model_input_rows"],
+        #             "feature_dim": saved["feature_dim"],
+        #             "input_start_date": saved["input_start_date"],
+        #             "input_end_date": saved["input_end_date"],
+        #         },
+        #         "created_at": saved["created_at"],
+        #     }
     except Exception:
         logger.exception(
             "Prediction request failed | request_id=%s | ticker=%s",
@@ -162,3 +156,4 @@ def predict_for_date(
             ticker,
         )
         raise
+predict_for_date()
