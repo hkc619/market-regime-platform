@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from datetime import date
 
-from app.services.backtest_service import predict_for_date
+from app.services.backtest_service import backtest_for_range
 
 from app.core.exceptions import (
     AppError,
@@ -21,9 +21,13 @@ logger = get_logger("backtest")
 
 router = APIRouter(prefix="/backtest", tags=["backtest"])
 
+
 class payload(BaseModel):
     ticker : str
-    as_of_date: str
+    sup0: str
+    sup1: str
+    start_date: str
+    end_date: str
     
 
 @router.post("/test")
@@ -36,7 +40,11 @@ def backtest(
     model_state = request.app.state.model_state
     request_id = request.state.request_id
     ticker = request_body.ticker.upper()
-    as_of_date = date.fromisoformat(request_body.as_of_date)
+    sup0 = request_body.sup0.upper()
+    sup1 = request_body.sup1.upper()
+
+    start_date = date.fromisoformat(request_body.start_date)
+    end_date = date.fromisoformat(request_body.end_date)
 
     if not model_state.model_loaded:
         logger.warning(
@@ -71,16 +79,17 @@ def backtest(
             },
         )
     try:
-        rows =  predict_for_date(
+        rows = backtest_for_range(
+            model_state=model_state,
             db=db,
             ticker=ticker,
-            model_state=model_state, 
-            request_id=request_id,
-            as_of_date=as_of_date
+            sup0=sup0,
+            sup1=sup1,
+            start_date=start_date,
+            end_date=end_date,
+            request_id=request_id
         )
-        print(rows)
         return rows
-
 
     except Exception:
         logger.exception(

@@ -13,14 +13,25 @@ from app.core.exceptions import (
     TickerNotFoundError,
 )
 
+from app.services.data_service import (
+    get_latest_support_window, 
+    get_macro_daily_window, 
+    get_macro_monthly_window, 
+    )
+
+from app.services.backtest_data_service import get_range_ticker_prices
+
 logger = get_logger(__name__)
 
 def predict_for_date(
-        db,
         ticker,
-        as_of_date: date,
         model_state,
         request_id,
+        ticker_rows,
+        sup0_rows,
+        sup1_rows,
+        macro_daily_rows,
+        macro_monthly_rows
 ) :
     """
     Run model inference using data available up to as_of_date.
@@ -29,7 +40,7 @@ def predict_for_date(
     are not written into the production prediction history table.
     """
     
-    from app.services.inference_db_service import prepare_inference_input
+    from app.services.inference_db_service import prepare_backtest_inference_input
     from app.services.inference import predict_proba
     from app.services.features_input_service import build_latest_model_input
 
@@ -46,17 +57,17 @@ def predict_for_date(
     metadata = model_state.metadata
     device = model_state.device
     try: 
-        raw = prepare_inference_input(
-            db=db, 
-            ticker=ticker, 
-            sup0="QQQ", 
-            sup1="TLT",
-            as_of_date=as_of_date,
-            latest=False, 
-            lookback=312
+        raw = prepare_backtest_inference_input(
+            ticker=ticker,
+            ticker_rows=ticker_rows, 
+            sup0_rows=sup0_rows, 
+            sup1_rows=sup1_rows,
+            macro_daily_rows=macro_daily_rows,
+            macro_monthly_rows=macro_monthly_rows
         )
 
         raw_rows = len(raw.ticker_close)
+        
         logger.info("Raw inference loaded | request_id=%s | ticker=%s | raw_rows=%d ",
             request_id,
             ticker,
@@ -95,15 +106,7 @@ def predict_for_date(
                 ticker,
             )
             raise ModelInferenceError(str(e)) from e
-        
-        logger.info(
-           "Prediction completed | request_id=%s | ticker=%s | regime=%s | confidence=%.4f",
-            request_id,
-            ticker,
-            prediction["predicted_regime"],
-            prediction["confidence"],
-        )
-        
+
         return {
             "ticker":ticker,
             "as_of_date":model_input.end_date,
@@ -116,69 +119,88 @@ def predict_for_date(
             "input_start_date":model_input.start_date,
             "input_end_date":model_input.end_date,
         }
-
-        # try:
-            
-        # except Exception as e:
-        #     logger.exception(
-        #         "Prediction save failed | request_id=%s | ticker=%s",
-        #         request_id,
-        #         ticker,
-        #     )
-        #     raise PredictionSaveError(str(e)) from e
+    except:
+        pass
         
-        latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
-
-        # logger.info(
-        #     "Prediction request finished | request_id=%s | ticker=%s | prediction_id=%s | latency_ms=%s",
-        #     request_id,
-        #     ticker,
-        #     saved["id"],
-        #     latency_ms,
-        # )
+        
+        
 
 
-        # return {
-        #         "prediction_id": saved["id"],
-        #         "ticker": saved["ticker"],
-        #         "as_of_date": saved["as_of_date"],
-        #         "predicted_class": saved["predicted_class"],
-        #         "predicted_regime": saved["predicted_regime"],
-        #         "confidence": float(saved["confidence"]),
-        #         "probabilities": {
-        #             "Trending-Down": float(saved["prob_trending_down"]),
-        #             "Transition-Down": float(saved["prob_transition_down"]),
-        #             "Transition-Up": float(saved["prob_transition_up"]),
-        #             "Trending-Up": float(saved["prob_trending_up"]),
-        #         },
-        #         "model_version": saved["model_version"],
-        #         "input_window": {
-        #             "raw_window_rows": saved["raw_window_rows"],
-        #             "feature_rows": saved["feature_rows"],
-        #             "model_input_rows": saved["model_input_rows"],
-        #             "feature_dim": saved["feature_dim"],
-        #             "input_start_date": saved["input_start_date"],
-        #             "input_end_date": saved["input_end_date"],
-        #         },
-        #         "created_at": saved["created_at"],
-        #     }
-    except Exception:
-        logger.exception(
-            "Prediction request failed | request_id=%s | ticker=%s",
-            request_id,
+
+def backtest_for_range(
+        model_state,
+        db,
+        ticker,
+        sup0,
+        sup1,
+        start_date: date,
+        end_date: date,
+        request_id
+):
+    ticker_rows = get_range_ticker_prices(
+        db=db,
+        ticker=ticker,
+        start_date=start_date,
+        end_date=end_date,
+        lookback=312
+    )
+    sup0_rows = get_latest_support_window(
+        db=db,
+        support=sup0,
+        start_date=start_date,
+        end_date=end_date,
+
+    )
+    sup1_rows = get_latest_support_window(
+        db=db,
+        support=sup1,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    macro_daily_rows = get_macro_daily_window(
+        db=db
+    )
+    macro_monthly_rows = get_macro_monthly_window(
+        db=db
+    ) 
+
+    delta = (end_date - start_date).days + 1
+    row = []
+    for i in range(delta):
+        start = i
+        end = 312 + i + 1
+        row.append(predict_for_date(
             ticker,
-        )
-        raise
+            model_state=model_state,
+            request_id=request_id,
+            ticker_rows=ticker_rows[start:end],
+            sup0_rows=sup0_rows[start:end],
+            sup1_rows=sup1_rows[start:end],
+            macro_daily_rows=macro_daily_rows,
+            macro_monthly_rows=macro_monthly_rows
+        ))
+    return row
+
+
+    logger.info(
+               "Backtest completed | request_id=%s | ticker=%s",
+                request_id,
+                ticker,
+            )
+
+
 
 # if __name__ == "__main__":
 #     db = next(get_db())
 #     try:
-#         rows = predict_for_date(
+#         rows = backtest_for_range(
 #             db=db,
 #             ticker="SPY",
-#             as_of_date=date(2025, 12, 1),
-#             model_state=
+#             sup0="QQQ",
+#             sup1="TLT",
+#             start_date=date(2025, 12, 1),
+#             end_date=date(2025, 12, 3),
+#             request_id="Manual Test"
 #         )
-#         print(rows)
 #     finally:
 #         db.close()

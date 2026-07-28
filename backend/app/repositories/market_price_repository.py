@@ -64,11 +64,37 @@ def get_latest_support_prices(
 
     return rows
 
-def get_ticker_window_ending_at(
+def get_row_number_between_start_end(
     db: Session,
     ticker: str,
-    as_of_date: date,
-    lookback: int,
+    start_date: date,
+    end_date: date,
+        
+):
+    query = text(
+        """
+        SELECT 
+            COUNT(*) as row_count
+        FROM market_prices
+        WHERE ticker = :ticker 
+        AND date BETWEEN :start_date AND :end_date;
+        """)
+    
+    rows = db.execute(
+        query, 
+        {
+        "ticker": ticker, 
+        "start_date": start_date,
+        "end_date": end_date
+        }
+    ).mappings().first()
+    return rows
+
+def get_ticker_window_range(
+    db: Session,
+    ticker: str,
+    end_date: date,
+    range: int,
 ): 
     query = text(
     """
@@ -82,17 +108,17 @@ def get_ticker_window_ending_at(
         adjusted_close,
         volume
     FROM market_prices
-    WHERE ticker = :ticker AND date <= :as_of_date
+    WHERE ticker = :ticker AND date <= :end_date
     ORDER BY date DESC
-    LIMIT :lookback;
+    LIMIT :range;
     """)
 
     rows = db.execute(
         query, 
         {
         "ticker": ticker, 
-        "lookback": lookback,
-        "as_of_date": as_of_date
+        "range": range,
+        "end_date": end_date
         }
     ).mappings().all()
 

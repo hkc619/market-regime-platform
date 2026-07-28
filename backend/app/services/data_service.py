@@ -4,7 +4,7 @@ from datetime import date
 from app.repositories.market_price_repository import (
     get_latest_ticker_prices, 
     get_latest_support_prices,
-    get_ticker_window_ending_at
+    get_ticker_window_range
     )
 from app.repositories.macro_repository import get_macro_daily, get_macro_monthly
 
@@ -62,10 +62,10 @@ def get_ticker_window_for_date(
 ):
     ticker = ticker.upper().strip()
 
-    rows = get_ticker_window_ending_at(
+    rows = get_ticker_window_range(
         db=db,
         ticker=ticker,
-        as_of_date=as_of_date,
+        start_date=as_of_date,
         lookback=lookback,
     )
 
