@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.core.logging import get_logger
 from app.providers.fred_provider import FredClient
-from app.repository.macro_refresh_repository import get_latest_macro_daily, upsert_macro_daily, get_latest_macro_monthly, upsert_macro_monthly
-from app.repository.data_update_log_repository import create_data_update_log
+from app.repositories.macro_refresh_repository import get_latest_macro_daily, upsert_macro_daily, get_latest_macro_monthly, upsert_macro_monthly
+from app.repositories.data_update_log_repository import create_data_update_log
 
 logger = get_logger(__name__)
 

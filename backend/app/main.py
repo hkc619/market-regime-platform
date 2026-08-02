@@ -16,6 +16,7 @@ from app.api.prediction_db import router as prediction_db_router
 from app.api.data_refresh import router as data_fresh_router
 from app.api.macro_refresh import router as macro_fresh_router
 from app.api.error_handler import app_error_handler
+from app.api.backtest import router as backtest_router
 
 
 ## logging
@@ -86,3 +87,4 @@ app.include_router(data_router, prefix="/api/v1")
 app.include_router(prediction_db_router, prefix="/api/v1")
 app.include_router(data_fresh_router, prefix="/api/v1")
 app.include_router(macro_fresh_router, prefix="/api/v1")
+app.include_router(backtest_router, prefix="/api/v1")

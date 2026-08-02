@@ -6,7 +6,7 @@ from app.schemas.data_refresh import MarketRefreshRequest, MarketRefreshResult
 from app.core.exceptions import ExternalDataFetchError, InvalidExternalDataError
 from app.services.data_refresh_service import refresh_market_data
 from app.schemas.data_refresh import DataUpdateLogResponse
-from app.repository.data_update_log_repository import get_recent_data_update_logs
+from app.repositories.data_update_log_repository import get_recent_data_update_logs
 
 
 router = APIRouter(prefix="/data/refresh", tags=["data-refresh"])

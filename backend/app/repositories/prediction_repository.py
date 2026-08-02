@@ -108,6 +108,7 @@ def create_prediction_history(
 def get_latest_prediction_by_ticker(
     db: Session,
     ticker: str,
+    limit: int=1,
 ):
     query = text(
         """
@@ -133,13 +134,64 @@ def get_latest_prediction_by_ticker(
         FROM prediction_history
         WHERE ticker = :ticker
         ORDER BY created_at DESC
-        LIMIT 1;
+        LIMIT :limit;
         """
     )
 
     result = db.execute(
         query,
-        {"ticker": ticker.upper()},
+        {
+            "ticker": ticker.upper(),
+            "limit": limit,
+         }
     ).mappings().first()
 
-    return dict(result) if result else None
+    return result if result else None
+
+def get_prediction_history_by_ticker(
+    db: Session,
+    ticker: str,
+    limit: int = 20,
+) -> list[dict]:
+    """
+    Fetch latest prediction history rows for a ticker.
+
+    Assumption:
+    - table name: prediction_history
+    - primary key column: id
+
+    If your table uses prediction_id instead of id,
+    change `id AS prediction_id` to `prediction_id`.
+    """
+
+    query = text(
+        """
+        SELECT
+            id AS prediction_id,
+            ticker,
+            as_of_date,
+            predicted_class,
+            predicted_regime,
+            confidence,
+            prob_trending_down,
+            prob_transition_down,
+            prob_transition_up,
+            prob_trending_up,
+            model_version,
+            created_at
+        FROM prediction_history
+        WHERE ticker = :ticker
+        ORDER BY as_of_date DESC, created_at DESC
+        LIMIT :limit
+        """
+    )
+
+    result = db.execute(
+        query,
+        {
+            "ticker": ticker.upper(),
+            "limit": limit,
+        },
+    )
+
+    return [dict(row) for row in result.mappings().all()]

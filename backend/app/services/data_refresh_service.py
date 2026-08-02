@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from datetime import date, timedelta
 import pandas as pd
 
-from app.repository.data_refresh_repository import get_latest_ohlcv, upsert_market_prices
-from app.repository.data_update_log_repository import create_data_update_log
+from app.repositories.data_refresh_repository import get_latest_ohlcv, upsert_market_prices
+from app.repositories.data_update_log_repository import create_data_update_log
 
 from app.providers.market_data_normalizer import normalize_market_data
 from app.core.logging import get_logger
