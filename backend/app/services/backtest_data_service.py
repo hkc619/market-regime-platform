@@ -37,14 +37,13 @@ def get_range_ticker_prices(
         end_date=end_date,
     )
     
-    print("start to end: ", len(start_to_end))
-    range = len(start_to_end) + lookback
+    window_size = len(start_to_end) + lookback
 
     rows = get_ticker_window_range(
         db=db,
         ticker=ticker,
         end_date=end_date,
-        range=range
+        range=window_size
     )
 
     return list(reversed(rows))

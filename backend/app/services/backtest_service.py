@@ -90,10 +90,8 @@ def predict_for_date(
             raise InsufficientFeatureDataError(
                 f"{ticker} does not have enough valid feature rows for inference."
         )
-        try:
-            prediction = predict_proba(model_input, device, model, metadata["model_config"]["scaler_path"])
-        except Exception as e:
-            raise ModelInferenceError(str(e)) from e
+        
+        prediction = predict_proba(model_input, device, model, metadata["model_config"]["scaler_path"])
 
         return {
             "ticker":ticker,
@@ -227,6 +225,11 @@ def backtest_for_range(
         end_date: date,
         request_id
 ):
+    if start_date > end_date:
+        raise ValueError(
+            "start_date must not be later than end_date"
+        )
+    
     ticker_rows = get_range_ticker_prices(
         db=db,
         ticker=ticker,
@@ -271,19 +274,28 @@ def backtest_for_range(
 
     for i in range(len(candidate_date_rows)):
         start = i
-        end = 312 + i + 1
-        prediction = predict_for_date(
-            ticker,
-            model_state=model_state,
-            request_id=request_id,
-            ticker_rows=ticker_rows[start:end],
-            sup0_rows=sup0_rows[start:end],
-            sup1_rows=sup1_rows[start:end],
-            macro_daily_rows=macro_daily_rows,
-            macro_monthly_rows=macro_monthly_rows
-        )
+        end = start + RAW_LOOKBACK_DAYS
 
-        print(prediction)
+        try:
+            prediction = predict_for_date(
+                ticker,
+                model_state=model_state,
+                request_id=request_id,
+                ticker_rows=ticker_rows[start:end],
+                sup0_rows=sup0_rows[start:end],
+                sup1_rows=sup1_rows[start:end],
+                macro_daily_rows=macro_daily_rows,
+                macro_monthly_rows=macro_monthly_rows
+            )
+
+        except (
+            InsufficientRawDataError,
+            InsufficientFeatureDataError,
+            ModelInferenceError,
+        ):
+            skip_reasons["prediction_failed"] += 1
+            continue
+        
         prediction_item = BacktestPredictionItem(
             as_of_date=prediction["as_of_date"],
             predicted_class=int(prediction["predicted_class"]),
@@ -296,19 +308,19 @@ def backtest_for_range(
         )
         predictions.append(prediction_item)
         
-        candidate_dates = [
-            row["date"]
-            for row in candidate_date_rows
-        ]
-
-        summary = build_backtest_summary(
-            ticker=ticker,
-            requested_start_date=start_date,
-            requested_end_date=end_date,
-            candidate_dates=candidate_dates,
-            predictions=predictions,
-            skip_reasons=skip_reasons,
-        )
+    candidate_dates = [
+        row["date"]
+        for row in candidate_date_rows
+    ]
+    
+    summary = build_backtest_summary(
+        ticker=ticker,
+        requested_start_date=start_date,
+        requested_end_date=end_date,
+        candidate_dates=candidate_dates,
+        predictions=predictions,
+        skip_reasons=skip_reasons,
+    )
 
     return summary
 
