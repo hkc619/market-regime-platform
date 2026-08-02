@@ -53,3 +53,9 @@ class NoNewMarketDataError(AppError):
     Refresh endpoint should return status='no_new_data' with HTTP 200.
     """
     pass
+
+class NoSuccessfulBacktestPredictionsError(AppError):
+    pass
+
+class InvalidPredictionError(AppError):
+    pass

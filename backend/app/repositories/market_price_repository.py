@@ -64,7 +64,7 @@ def get_latest_support_prices(
 
     return rows
 
-def get_row_number_between_start_end(
+def get_rows_between_start_end(
     db: Session,
     ticker: str,
     start_date: date,
@@ -74,7 +74,7 @@ def get_row_number_between_start_end(
     query = text(
         """
         SELECT 
-            COUNT(*) as row_count
+            date
         FROM market_prices
         WHERE ticker = :ticker 
         AND date BETWEEN :start_date AND :end_date;
@@ -87,7 +87,7 @@ def get_row_number_between_start_end(
         "start_date": start_date,
         "end_date": end_date
         }
-    ).mappings().first()
+    ).mappings().all()
     return rows
 
 def get_ticker_window_range(
