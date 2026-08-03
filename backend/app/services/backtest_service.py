@@ -28,6 +28,8 @@ from app.services.data_service import (
 
 from app.services.backtest_data_service import get_range_ticker_prices, get_rows_between_start_end
 
+from app.services.inference_input_service import market_rows_to_dataframe
+
 logger = get_logger(__name__)
 
 def predict_for_date(
@@ -101,8 +103,8 @@ def predict_for_date(
             "confidence":float(prediction["confidence"]),
             "probabilities": prediction["probabilities"],
         }
-    except:
-        pass
+    except Exception as e:
+        raise ModelInferenceError(str(e)) from e
         
 
 STATE_NAMES = {
@@ -237,19 +239,23 @@ def backtest_for_range(
         end_date=end_date,
         lookback=312
     )
+    ticker_df = market_rows_to_dataframe(ticker_rows)
+    ticker_df.index.min()
+
     sup0_rows = get_latest_support_window(
         db=db,
         support=sup0,
-        start_date=start_date,
+        start_date=ticker_df.index.min(),
         end_date=end_date,
-
     )
+
     sup1_rows = get_latest_support_window(
         db=db,
         support=sup1,
-        start_date=start_date,
+        start_date=ticker_df.index.min(),
         end_date=end_date,
     )
+
     macro_daily_rows = get_macro_daily_window(
         db=db
     )
@@ -268,7 +274,7 @@ def backtest_for_range(
     "insufficient_market_rows": 0,
     "candidate_date_missing": 0,
     "prediction_failed": 0,
-}
+    }
     
     predictions: list[BacktestPredictionItem] = []
 
@@ -292,7 +298,15 @@ def backtest_for_range(
             InsufficientRawDataError,
             InsufficientFeatureDataError,
             ModelInferenceError,
-        ):
+            TickerNotFoundError,
+        ) as e:
+            logger.warning(
+                "Backtest prediction skipped | ticker=%s | index=%s | error=%s",
+                ticker,
+                i,
+                e,
+            )
+
             skip_reasons["prediction_failed"] += 1
             continue
         
