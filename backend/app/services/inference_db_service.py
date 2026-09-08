@@ -13,9 +13,9 @@ def prepare_inference_input(
         db, 
         ticker: str,
         latest: bool, 
-        as_of_date: date,
         sup0: str, 
         sup1: str, 
+        as_of_date: date | None = None,
         lookback: int = 312
     ):
     if latest:
@@ -24,6 +24,10 @@ def prepare_inference_input(
         ticker=ticker,
         lookback=lookback,
         )
+    elif not latest and as_of_date is None:
+        raise ValueError(
+              "as_of_date is required when latest=False"
+          )
     else:
         ticker_rows = get_ticker_window_for_date(
         db=db,

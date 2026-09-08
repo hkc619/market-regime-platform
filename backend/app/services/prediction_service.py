@@ -43,7 +43,7 @@ def create_latest_prediction(
     try: 
         raw = prepare_inference_input(
             db=db, 
-            ticker=ticker, 
+            ticker=ticker,
             sup0="QQQ", 
             sup1="TLT", 
             latest=True, 

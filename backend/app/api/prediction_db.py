@@ -2,7 +2,10 @@ from fastapi import APIRouter, Request, HTTPException, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.services.prediction_service import create_latest_prediction, get_prediction_history
+from app.services.prediction_service import (
+    create_latest_prediction,
+    get_prediction_history as get_prediction_history_service,
+)
 
 from app.repositories.prediction_repository import get_latest_prediction_by_ticker
 
@@ -184,7 +187,7 @@ def get_prediction_history(
     db: Session = Depends(get_db),
 ):
     try:
-        return get_prediction_history(
+        return get_prediction_history_service(
             db=db,
             ticker=ticker,
             limit=limit,
@@ -197,4 +200,3 @@ def get_prediction_history(
         raise ModelInferenceError(
             f"Unexpected prediction history error: {str(e)}"
         )
-
