@@ -11,11 +11,7 @@ from app.repositories.prediction_repository import get_latest_prediction_by_tick
 
 from app.core.exceptions import (
     AppError,
-    InsufficientFeatureDataError,
-    InsufficientRawDataError,
     ModelInferenceError,
-    PredictionSaveError,
-    TickerNotFoundError,
 )
 from app.core.logging import get_logger
 
@@ -83,9 +79,13 @@ def predict(
             request_id=request_id,
         )
 
-    except Exception:
+    except (AppError, HTTPException):
+        raise
+
+    except Exception as exc:
         logger.exception(
-            "Prediction failed | request_id= | ticker=%s",
+            "Prediction failed | request_id=%s | ticker=%s",
+            request_id,
             ticker,
         )
         raise HTTPException(
@@ -94,28 +94,8 @@ def predict(
                 "error": "prediction_failed",
                 "message": "Prediction failed due to an internal error.",
             },
-        ) 
-        
-    except AppError:
-        raise
+        ) from exc
 
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-    
-    except Exception as e:
-        raise TickerNotFoundError(f"Unexpected prediction error: {str(e)}")
-
-    except Exception as e:
-        raise InsufficientRawDataError(f"Unexpected prediction error: {str(e)}")
-    
-    except Exception as e:
-        raise InsufficientFeatureDataError(f"Unexpected prediction error: {str(e)}")
-
-    except Exception as e:
-        raise ModelInferenceError(f"Model inference failed: {str(e)}")
-
-    except Exception as e:
-        raise PredictionSaveError(f"Prediction save failed: {str(e)}")
     
     
 

@@ -5,14 +5,7 @@ from datetime import date
 
 from app.services.backtest_service import backtest_for_range
 
-from app.core.exceptions import (
-    AppError,
-    InsufficientFeatureDataError,
-    InsufficientRawDataError,
-    ModelInferenceError,
-    PredictionSaveError,
-    TickerNotFoundError,
-)
+from app.core.exceptions import AppError
 from app.core.logging import get_logger
 
 from app.db.session import get_db
@@ -43,8 +36,17 @@ def backtest(
     sup0 = request_body.sup0.upper()
     sup1 = request_body.sup1.upper()
 
-    start_date = date.fromisoformat(request_body.start_date)
-    end_date = date.fromisoformat(request_body.end_date)
+    try:
+        start_date = date.fromisoformat(request_body.start_date)
+        end_date = date.fromisoformat(request_body.end_date)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Invalid date format.") from exc
+
+    if start_date > end_date:
+        raise HTTPException(
+            status_code=422,
+            detail="start_date must not be later than end_date",
+        )
 
     if not model_state.model_loaded:
         logger.warning(
@@ -91,7 +93,10 @@ def backtest(
         )
         return rows
 
-    except Exception:
+    except (AppError, HTTPException):
+        raise
+
+    except Exception as exc:
         logger.exception(
             "Prediction failed | request_id=%s | ticker=%s",
             request_id,
@@ -103,28 +108,4 @@ def backtest(
                 "error": "prediction_failed",
                 "message": "Prediction failed due to an internal error.",
             },
-        ) 
-        
-    except AppError:
-        raise
-
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-    
-    except Exception as e:
-        raise TickerNotFoundError(f"Unexpected prediction error: {str(e)}")
-
-    except Exception as e:
-        raise InsufficientRawDataError(f"Unexpected prediction error: {str(e)}")
-    
-    except Exception as e:
-        raise InsufficientFeatureDataError(f"Unexpected prediction error: {str(e)}")
-
-    except Exception as e:
-        raise ModelInferenceError(f"Model inference failed: {str(e)}")
-
-    except Exception as e:
-        raise PredictionSaveError(f"Prediction save failed: {str(e)}")
-    
-    
-
+        ) from exc
