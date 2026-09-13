@@ -1,19 +1,20 @@
-import sys
 import json
 from pathlib import Path
 from typing import Any
+from dotenv import load_dotenv
+import os
 
-
-sys.path.append('/Users/hkc619/Documents/PY/project/market-regime-platform/backend/app')
-from ml.model import DualCNNGRUFusion
-from core.logging import get_logger
+from app.ml.model import DualCNNGRUFusion
+from app.core.logging import get_logger
 
 logger = get_logger("model_registry")
+
+load_dotenv()
 
 class ModelLoadError(Exception):
     pass
 
-METADATA_PATH = Path("/Users/hkc619/Documents/PY/project/market-regime-platform/models/metadata.json")
+METADATA_PATH = Path(os.getenv("METADATA_PATH"))
 
 ## Using Path can check the file exist or not
 def load_metadata(metadata_path: Path = METADATA_PATH) -> dict[str, Any]:

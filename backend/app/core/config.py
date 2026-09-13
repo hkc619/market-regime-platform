@@ -75,16 +75,3 @@ class ModelInputBundle:
 
     start_date: pd.Timestamp
     end_date: pd.Timestamp
-
-
-class Settings(BaseSettings):
-    database_url: str
-    fred_api_key: str
-
-    model_config = SettingsConfigDict(
-        env_file=ENV_FILE,
-        env_file_encoding="utf-8",
-    )
-
-
-settings = Settings()

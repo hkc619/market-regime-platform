@@ -1,12 +1,80 @@
 # AI-Powered Market Regime Classification Platform
-A full-stack ML inference platform that decomposes equity price signals into low-frequency trend and residual components, classifies market trend regimes using a CNN-GRU model, and provides REST APIs, backtesting, and dashboard visualization for financial time-series analysis. ////
-SPY
 
-## System Architecture:
+A market regime classification backend built with FastAPI, PostgreSQL, and a CNN-GRU model. The project focuses on SPY inference, prediction history, market and macro data refresh, and historical classification replay. A frontend dashboard and Docker deployment are planned.
 
+## Current Progress — 2026-09-09
 
-## Current Status 7/8
-Completed:
+**Status: backend integration and validation in progress.** The main backend layers are implemented, but the complete workflow has not yet been validated against real database and external data services following the recent fixes.
+
+### Implemented Backend Components
+
+- API, service, repository, and external data provider layers.
+- PostgreSQL operations for market prices, daily/monthly macro data, prediction history, and refresh logs.
+- Model loading at application startup, inference input preparation, and prediction persistence.
+- Latest prediction and prediction history endpoints.
+- Historical classification replay with regime distribution, coverage, skip reasons, and confidence summaries.
+- Health endpoints, request IDs, request latency logging, and application error handling.
+
+These components are at different stages of validation; implementation does not imply that every endpoint currently works end to end.
+
+### Recent Fixes
+
+- **`b71be83` — Prediction input and history routing:** made `as_of_date` optional for latest inference, required it for historical mode, and resolved the endpoint/service name collision that caused recursive history queries.
+- **`2b51a08` — API exception handling:** preserved known `AppError` and `HTTPException` responses across five endpoints, removed unreachable exception handlers, and returned generic HTTP 500 responses for unexpected failures.
+- Added explicit HTTP 422 handling for invalid backtest dates and reversed date ranges.
+- Added regression tests for success responses, service call arguments, error status/code preservation, and history queries through the real service.
+
+### Validation Status
+
+The latest targeted regression run completed with **69 passed and 3 warnings**:
+
+```bash
+cd backend
+python -m pytest -q \
+  app/tests/test_api_exception_handling.py \
+  app/tests/test_prediction_history_api.py \
+  app/tests/test_prediction_history_service.py \
+  app/tests/test_error_mapping.py
+```
+
+Run this command in the configured backend environment. These tests isolate database and external service dependencies. This result is not a full-suite pass or proof of live end-to-end functionality. Other tests still have known failures, and the earlier code review excluded `ml`, so model methodology and evaluation validity remain to be reviewed.
+
+### Remaining Work
+
+- Repair the yfinance provider invocation and normalize ordinary/MultiIndex data columns consistently.
+- Fix refresh response contracts, empty-data handling, and remaining service exception classification issues.
+- Validate historical window boundaries, supporting-asset alignment, and CPI availability/filling.
+- Make stored model versions match the model actually loaded.
+- Establish a complete test baseline with real PostgreSQL and inference integration tests, followed by CI and browser E2E tests.
+- Add Docker Compose, database migrations, reproducible configuration, and demo data.
+- Build the frontend dashboard for predictions, history, replay, and data management.
+
+The current backtest functionality summarizes historical classifications; it does not establish trading-strategy returns or profitability. Timing and data-vintage limitations must be addressed before claiming absence of look-ahead bias.
+
+See the [Project Completion Roadmap](notes/20260908.md) for phases, checklists, and acceptance criteria.
+
+## System Architecture
+
+```text
+Planned frontend dashboard
+          |
+          v
+FastAPI routes → Services → Repositories → PostgreSQL
+                    |
+                    +→ Data providers (Yahoo Finance / FRED)
+                    |
+                    +→ Feature preparation → Scaler / CNN-GRU inference
+```
+
+The frontend and Docker environment are planned work. The diagram describes the backend structure and intended frontend connection.
+
+## Earlier Development Milestones
+
+The entries below record earlier implementation progress and legacy examples. They are not current end-to-end validation results.
+
+### 2026-07-08
+
+Implemented at this milestone:
 - Upsert-based market data update into market_prices
 - data_update_log table for recording refresh results
 - Refresh result handling for:
@@ -15,8 +83,9 @@ Completed:
   - no_new_data
   - failed
 
-## Current Status 7/1
-Completed:
+### 2026-07-01
+
+Implemented at this milestone:
 - PostgreSQL schema established
 - OHLCV data imported
 - macro_daily data imported
@@ -27,7 +96,7 @@ Completed:
 - model input generated successfully
 - POST endpoint can return prediction result
 
-## Current Status 6/1
+### 2026-06-01
 
 - Refactored the original CNN-GRU notebook into modular Python components.
 - Built a local inference pipeline that loads Excel market data and predicts the next-day market regime.
@@ -218,13 +287,15 @@ Completed:
   }
 ```
 
-## How to Run Local Prediction
+## Legacy Excel Prediction Script
+
+This earlier entry point depends on local Excel files and path configuration. It is retained for reference and has not been revalidated; the active API uses database-backed prediction services.
 
 ```bash
 python3 backend/app/scripts/predict.py
 ```
 
-## Example output
+## Historical Example Output
 
 ```json
 {
@@ -243,7 +314,13 @@ python3 backend/app/scripts/predict.py
 
 FastAPI automatically generates interactive Swagger documentation from the Pydantic request/response schemas.
 
-Run the backend:
+The backend currently requires an existing PostgreSQL schema and data, installed backend dependencies, and `backend/.env` configured with `DATABASE_URL`, `FRED_API_KEY`, and `METADATA_PATH`. Model metadata must reference accessible checkpoint and scaler files. Automated setup through Docker and migrations is planned.
+
+From the repository root, with the backend Python environment activated:
 
 ```bash
-uvicorn backend.app.main:app --reload
+cd backend
+python -m uvicorn app.main:app --reload
+```
+
+Open [Swagger UI](http://127.0.0.1:8000/docs) after startup. Check `/api/v1/health` for model status and `/api/v1/health/db` for database connectivity. The service can start with a degraded model state; startup alone does not establish readiness for prediction.

@@ -3,11 +3,14 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas.data_refresh import MarketRefreshRequest, MarketRefreshResult
-from app.core.exceptions import ExternalDataFetchError, InvalidExternalDataError
+from app.core.exceptions import AppError
+from app.core.logging import get_logger
 from app.services.data_refresh_service import refresh_market_data
 from app.schemas.data_refresh import DataUpdateLogResponse
 from app.repositories.data_update_log_repository import get_recent_data_update_logs
 
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/data/refresh", tags=["data-refresh"])
 
@@ -25,17 +28,18 @@ def refresh_market(
             ticker=payload.ticker,
             request_id=request_id,
         )
-    except Exception as e:
-        raise ExternalDataFetchError(f"Unexpected data refresh error: {str(e)}")
+    except (AppError, HTTPException):
+        raise
 
-    except Exception as e:
-        raise InvalidExternalDataError(f"Unexpected data refresh error: {str(e)}")
-    
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        logger.exception("Data refresh failed | request_id=%s", request_id)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "data_refresh_failed",
+                "message": "Data refresh failed due to an internal error.",
+            },
+        ) from exc
     
 
 @router.get("/logs", response_model=DataUpdateLogResponse)

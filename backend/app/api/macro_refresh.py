@@ -7,7 +7,10 @@ from app.db.session import get_db
 from app.services.macro_refresh_service import MacroDataService
 from app.schemas.macro_refresh import  MacroRefreshResult
 from app.providers.fred_provider import FredClient
-from app.core.exceptions import ExternalDataFetchError, InvalidExternalDataError
+from app.core.exceptions import AppError
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/data/refresh", tags=["data-refresh"])
 
@@ -29,17 +32,18 @@ def refresh_macro_daily(
             request_id=request_id,
         )
     
-    except Exception as e:
-        raise ExternalDataFetchError(f"Unexpected macro refresh error: {str(e)}")
+    except (AppError, HTTPException):
+        raise
 
-    except Exception as e:
-        raise InvalidExternalDataError(f"Unexpected macro refresh error: {str(e)}")
-    
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        logger.exception("Data refresh failed | request_id=%s", request_id)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "data_refresh_failed",
+                "message": "Data refresh failed due to an internal error.",
+            },
+        ) from exc
     
 @router.post("/macro/monthly", response_model=MacroRefreshResult)
 def refresh_macro_daily(
@@ -54,15 +58,15 @@ def refresh_macro_daily(
             db=db,
             request_id=request_id,
         )
-    except Exception as e:
-        raise ExternalDataFetchError(f"Unexpected macro refresh error: {str(e)}")
+    except (AppError, HTTPException):
+        raise
 
-    except Exception as e:
-        raise InvalidExternalDataError(f"Unexpected macro refresh error: {str(e)}")
-    
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+    except Exception as exc:
+        logger.exception("Data refresh failed | request_id=%s", request_id)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "data_refresh_failed",
+                "message": "Data refresh failed due to an internal error.",
+            },
+        ) from exc
